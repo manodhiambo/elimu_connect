@@ -19,7 +19,14 @@ class FirestoreService {
   }
 
   Stream<QuerySnapshot> getBooks() {
-    return _db.collection('books').orderBy('timestamp', descending: true).snapshots();
+  return _db
+      .collection('books')
+      .orderBy('timestamp', descending: true)
+      .snapshots();
+}
+
+  Future<void> addBook(Map<String, dynamic> bookData) async {
+    await _db.collection('books').add(bookData);
   }
 
   // ================== PAST PAPERS ==================
@@ -32,13 +39,20 @@ class FirestoreService {
     await _db.collection('past_papers').add({
       'subject': subject,
       'year': year,
-      'url': url,
+      'fileUrl': url, // Use 'fileUrl' to match UI usage
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
 
   Stream<QuerySnapshot> getPastPapers() {
-    return _db.collection('past_papers').orderBy('timestamp', descending: true).snapshots();
+    return _db
+        .collection('past_papers')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
+  Future<void> addPastPaper(Map<String, dynamic> paperData) async {
+    await _db.collection('past_papers').add(paperData);
   }
 
   // ================== QUESTIONS ==================
@@ -56,58 +70,54 @@ class FirestoreService {
     });
   }
 
-  Stream<QuerySnapshot> getQuestions() {
-    return _db.collection('questions').orderBy('timestamp', descending: true).snapshots();
+  Stream<List<Map<String, dynamic>>> getQuestions() {
+    return _db
+        .collection('questions')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList());
   }
 
-  // Method to add a book
-  Future<void> addBook(Map<String, dynamic> bookData) async {
-    await _db.collection('books').add(bookData);
-  }
+  // ================== REPLIES ==================
 
-  // Method to add a past paper
-  Future<void> addPastPaper(Map<String, dynamic> paperData) async {
-    await _db.collection('past_papers').add(paperData);
-  }
-
-  // Post a reply to a specific question
   Future<void> postReplyToQuestion({
     required String questionId,
     required String replyText,
     required String repliedBy,
   }) async {
-    await _db.collection('questions').doc(questionId).collection('replies').add({
+    await _db
+        .collection('questions')
+        .doc(questionId)
+        .collection('replies')
+        .add({
       'replyText': replyText,
       'repliedBy': repliedBy,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
 
-  // Get replies for a specific question
-  Stream<QuerySnapshot> getRepliesForQuestion(String questionId) {
-    return _db
-        .collection('questions')
-        .doc(questionId)
-        .collection('replies')
-        .orderBy('timestamp', descending: false)
-        .snapshots();
-  }
-
-  // Post a reply with a custom data map
   Future<void> postReply({
     required String questionId,
     required Map<String, dynamic> replyData,
   }) async {
-    await _db.collection('questions').doc(questionId).collection('replies').add(replyData);
+    await _db
+        .collection('questions')
+        .doc(questionId)
+        .collection('replies')
+        .add(replyData);
   }
 
-  // Fetch replies with a custom data map
-  Stream<QuerySnapshot> getReplies(String questionId) {
+  Stream<List<Map<String, dynamic>>> getReplies(String questionId) {
     return _db
         .collection('questions')
         .doc(questionId)
         .collection('replies')
         .orderBy('timestamp', descending: true)
-        .snapshots();
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList());
   }
 }

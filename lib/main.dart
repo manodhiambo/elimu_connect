@@ -54,9 +54,10 @@ class MyApp extends StatelessWidget {
         '/teacherDashboard': (context) => const TeacherDashboard(),
         '/studentDashboard': (context) => const StudentDashboard(),
         '/home': (context) => const HomeScreen(),
-        '/profile': (context) => const ProfileScreen(), // ✅ Only this one kept
-        '/books': (context) => const BooksScreen(),
-        '/pastPapers': (context) => const PastPapersScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        // Remove const from BooksScreen route
+        '/books': (context) => BooksScreen(),
+        '/pastPapers': (context) => PastPapersScreen(),
         '/revision': (context) => const RevisionScreen(),
         '/uploadBook': (context) => const UploadBookScreen(),
         '/uploadPaper': (context) => const UploadPaperScreen(),
@@ -64,7 +65,6 @@ class MyApp extends StatelessWidget {
         '/manageTeachers': (context) => const ManageTeachersScreen(),
         '/manageStudents': (context) => const ManageStudentsScreen(),
         '/settings': (context) => const AppSettingsScreen(),
-        // If AdminProfileScreen is different, add a different route:
         '/adminProfile': (context) => const AdminProfileScreen(),
       },
     );

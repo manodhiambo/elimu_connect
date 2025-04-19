@@ -1,122 +1,186 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import '../services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/reply_modal.dart';
+import 'package:flutter/material.dart';
 
 class QuestionForumScreen extends StatefulWidget {
-  const QuestionForumScreen({super.key});
+  const QuestionForumScreen({Key? key}) : super(key: key);
 
   @override
-  State<QuestionForumScreen> createState() => _QuestionForumScreenState();
+  _QuestionForumScreenState createState() => _QuestionForumScreenState();
 }
 
 class _QuestionForumScreenState extends State<QuestionForumScreen> {
-  final FirestoreService _firestoreService = FirestoreService();
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  final _questionController = TextEditingController();
+  bool _isLoading = false;
+  String? _userName;
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserName();
+  }
+
+  Future<void> _getUserName() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      setState(() {
+        _userName = userDoc['name'];
+      });
+    }
+  }
 
   void _submitQuestion() async {
-    if (_formKey.currentState!.validate()) {
-      final user = FirebaseAuth.instance.currentUser;
-      await _firestoreService.postQuestion(
-        title: _titleController.text,
-        description: _descController.text,
-        postedBy: user?.email ?? 'Anonymous',
-      );
-      _titleController.clear();
-      _descController.clear();
+    if (_questionController.text.isEmpty) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final user = _auth.currentUser;
+    if (user != null) {
+      await _firestore.collection('questions').add({
+        'question': _questionController.text.trim(),
+        'user_id': user.uid,
+        'user_name': _userName,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      _questionController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Question posted!')),
+        const SnackBar(content: Text('Question submitted successfully')),
       );
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Question Forum')),
-      body: Column(
-        children: [
-          // Question Form
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Form(
-              key: _formKey,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Question Title'),
-                    validator: (value) =>
-                        value == null || value.isEmpty ? 'Enter a title' : null,
+                    controller: _questionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Ask a question',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
                   ),
-                  TextFormField(
-                    controller: _descController,
-                    decoration: const InputDecoration(labelText: 'Description'),
-                    maxLines: 2,
-                    validator: (value) =>
-                        value == null || value.isEmpty ? 'Enter a description' : null,
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _submitQuestion,
+                    child: const Text('Submit Question'),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Questions from other users:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    onPressed: _submitQuestion,
-                    icon: const Icon(Icons.send),
-                    label: const Text('Post Question'),
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: _firestore
+                          .collection('questions')
+                          .orderBy('timestamp', descending: true)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Center(child: Text('No questions asked yet.'));
+                        }
+
+                        final questions = snapshot.data!.docs;
+                        return ListView.builder(
+                          itemCount: questions.length,
+                          itemBuilder: (ctx, index) {
+                            final questionData = questions[index];
+                            final question = questionData['question'];
+                            final userName = questionData['user_name'];
+                            final timestamp = questionData['timestamp'] as Timestamp;
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListTile(
+                                title: Text(question),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Asked by: $userName'),
+                                    Text('Posted on: ${timestamp.toDate()}'),
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.comment),
+                                  onPressed: () => _showAnswerDialog(questionData.id),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  void _showAnswerDialog(String questionId) {
+    final TextEditingController _answerController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Submit Your Answer'),
+          content: TextFormField(
+            controller: _answerController,
+            decoration: const InputDecoration(labelText: 'Your answer'),
+            maxLines: 3,
           ),
-
-          const Divider(),
-
-          // Questions list
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _firestoreService.getQuestions(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Center(child: Text('Something went wrong'));
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final questions = snapshot.data!.docs;
-                if (questions.isEmpty) {
-                  return const Center(child: Text('No questions posted yet.'));
-                }
-
-                return ListView.builder(
-                  itemCount: questions.length,
-                  itemBuilder: (context, index) {
-                    final data = questions[index].data() as Map<String, dynamic>;
-                    return InkWell(
-                      onTap: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                          ),
-                          builder: (_) => ReplyModal(questionId: questions[index].id),
-                        );
-                      },
-                      child: ListTile(
-                        title: Text(data['title'] ?? ''),
-                        subtitle: Text(data['description'] ?? ''),
-                        trailing: Text(data['postedBy'] ?? ''),
-                      ),
-                    );
-                  },
-                );
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
               },
+              child: const Text('Cancel'),
             ),
-          ),
-        ],
-      ),
+            TextButton(
+              onPressed: () async {
+                final answer = _answerController.text.trim();
+                if (answer.isNotEmpty) {
+                  await _firestore.collection('questions').doc(questionId).update({
+                    'answers': FieldValue.arrayUnion([answer]),
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Answer submitted successfully')),
+                  );
+                  Navigator.of(ctx).pop();
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

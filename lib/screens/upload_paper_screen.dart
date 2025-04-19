@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import '../services/firestore_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:file_picker/file_picker.dart';
 
 class UploadPaperScreen extends StatefulWidget {
   const UploadPaperScreen({super.key});
@@ -10,51 +13,69 @@ class UploadPaperScreen extends StatefulWidget {
 
 class _UploadPaperScreenState extends State<UploadPaperScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
-  final TextEditingController _linkController = TextEditingController();
+  final TextEditingController _yearController = TextEditingController();
 
-  bool _isUploading = false;
+  File? _pdfFile;
+  String? _fileName;
+  bool _isLoading = false;
+
+  Future<void> _pickPDF() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null && result.files.single.path != null) {
+      setState(() {
+        _pdfFile = File(result.files.single.path!);
+        _fileName = result.files.single.name;
+      });
+    }
+  }
 
   Future<void> _uploadPaper() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_pdfFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a PDF file to upload.')),
+      );
+      return;
+    }
 
-    setState(() {
-      _isUploading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      await FirestoreService().addPastPaper({
+      final storageRef = FirebaseStorage.instance.ref().child('past_papers/$_fileName');
+      final uploadTask = await storageRef.putFile(_pdfFile!);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('past_papers').add({
         'title': _titleController.text.trim(),
         'subject': _subjectController.text.trim(),
-        'link': _linkController.text.trim(),
-        'timestamp': DateTime.now(),
+        'year': _yearController.text.trim(),
+        'downloadUrl': downloadUrl,
+        'uploadedAt': FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Past Paper uploaded successfully')),
+        const SnackBar(content: Text('Paper uploaded successfully!')),
       );
 
-      _titleController.clear();
-      _subjectController.clear();
-      _linkController.clear();
+      _formKey.currentState!.reset();
+      setState(() {
+        _pdfFile = null;
+        _fileName = null;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to upload: $e')),
+        SnackBar(content: Text('Upload failed: $e')),
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
-
-    setState(() {
-      _isUploading = false;
-    });
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _subjectController.dispose();
-    _linkController.dispose();
-    super.dispose();
   }
 
   @override
@@ -62,37 +83,46 @@ class _UploadPaperScreenState extends State<UploadPaperScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Upload Past Paper')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Past Paper Title'),
-                validator: (value) => value == null || value.isEmpty ? 'Enter title' : null,
+                decoration: const InputDecoration(labelText: 'Paper Title'),
+                validator: (value) => value!.isEmpty ? 'Enter title' : null,
               ),
               TextFormField(
                 controller: _subjectController,
                 decoration: const InputDecoration(labelText: 'Subject'),
-                validator: (value) => value == null || value.isEmpty ? 'Enter subject' : null,
+                validator: (value) => value!.isEmpty ? 'Enter subject' : null,
               ),
               TextFormField(
-                controller: _linkController,
-                decoration: const InputDecoration(labelText: 'Download Link (PDF, etc)'),
-                validator: (value) => value == null || value.isEmpty ? 'Enter link' : null,
+                controller: _yearController,
+                decoration: const InputDecoration(labelText: 'Year'),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Enter year' : null,
               ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _pickPDF,
+                icon: const Icon(Icons.attach_file),
+                label: const Text('Choose PDF File'),
+              ),
+              if (_fileName != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Selected File: $_fileName'),
+                ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _isUploading ? null : _uploadPaper,
-                child: _isUploading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Upload Past Paper'),
-              ),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton.icon(
+                      onPressed: _uploadPaper,
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Upload Paper'),
+                    ),
             ],
           ),
         ),
