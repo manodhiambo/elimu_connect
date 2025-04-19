@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,7 +8,7 @@ import 'register_screen.dart';
 import 'admin_dashboard.dart';
 import 'teacher_dashboard.dart';
 import 'student_dashboard.dart';
-import 'role_selector_screen.dart'; // Import the Role Selector Screen
+import 'role_selector_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,12 +26,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> login() async {
     setState(() => isLoading = true);
-
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
+      if (!userCredential.user!.emailVerified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please verify your email before logging in.")),
+        );
+        await _auth.signOut();
+        setState(() => isLoading = false);
+        return;
+      }
 
       await routeUser(userCredential.user!.uid);
     } catch (e) {
@@ -44,35 +53,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> signInWithGoogle() async {
     setState(() => isLoading = true);
-
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final userCredential =
-          await _auth.signInWithCredential(credential);
-      final user = userCredential.user!;
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
-
-      final doc = await userRef.get();
-      if (!doc.exists) {
-        // New user, need to set role
-        await Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const RoleSelectorScreen()),
-        );
+      if (kIsWeb) {
+        // Web: Use Firebase signInWithPopup
+        final googleProvider = GoogleAuthProvider();
+        final userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        await handlePostGoogleLogin(userCredential.user!);
       } else {
-        // Existing user, route to their dashboard
-        await routeUser(user.uid);
+        // Mobile
+        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) {
+          setState(() => isLoading = false);
+          return;
+        }
+
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        final userCredential = await _auth.signInWithCredential(credential);
+        await handlePostGoogleLogin(userCredential.user!);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,11 +85,42 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> handlePostGoogleLogin(User user) async {
+    final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final doc = await userRef.get();
+
+    if (!doc.exists) {
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const RoleSelectorScreen()),
+      );
+    } else {
+      await routeUser(user.uid);
+    }
+  }
+
+  Future<void> forgotPassword() async {
+    if (emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your email first.')),
+      );
+      return;
+    }
+
+    try {
+      await _auth.sendPasswordResetEmail(email: emailController.text.trim());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset link sent to your email.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to send reset email: ${e.toString()}')),
+      );
+    }
+  }
+
   Future<void> routeUser(String uid) async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
     if (!userDoc.exists) {
       throw Exception("User data not found in Firestore.");
@@ -136,6 +169,13 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: true,
               decoration: const InputDecoration(labelText: 'Password'),
             ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: forgotPassword,
+                child: const Text('Forgot Password?'),
+              ),
+            ),
             const SizedBox(height: 20),
             isLoading
                 ? const CircularProgressIndicator()
@@ -161,8 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const RegisterScreen()),
+                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
                 );
               },
               child: const Text('No account? Register here'),

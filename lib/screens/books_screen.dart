@@ -1,49 +1,48 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../services/firestore_service.dart';
+import 'package:elimu_connect/services/firestore_service.dart';
 
 class BooksScreen extends StatelessWidget {
-  const BooksScreen({super.key});
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Books')),
-      body: StreamBuilder(
-        stream: FirestoreService().getBooks(),
+      appBar: AppBar(
+        title: const Text('Books'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestoreService.getBooks(), // Now returns Stream<QuerySnapshot>
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error loading books'));
-          }
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final books = snapshot.data!.docs;
-          if (books.isEmpty) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('No books available'));
           }
+
+          final books = snapshot.data!.docs.map((doc) {
+            return doc.data() as Map<String, dynamic>;
+          }).toList();
 
           return ListView.builder(
             itemCount: books.length,
             itemBuilder: (context, index) {
-              final bookData = books[index].data() as Map<String, dynamic>;
               return ListTile(
-                title: Text(bookData['title'] ?? 'No Title'),
-                subtitle: Text(bookData['subject'] ?? 'No Subject'),
+                title: Text(books[index]['title'] ?? 'No title'),
+                subtitle: Text('Author: ${books[index]['author'] ?? 'Unknown author'}'),
                 onTap: () {
-                  // Optional: Open download/view dialog
+                  // Optional: handle tap (e.g., open PDF or show details)
                 },
               );
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/uploadBook');
-        },
-        child: const Icon(Icons.upload_file),
       ),
     );
   }

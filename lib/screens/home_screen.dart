@@ -18,11 +18,11 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      {'title': 'Books', 'icon': Icons.menu_book, 'screen': const BooksScreen()},
-      {'title': 'Past Papers', 'icon': Icons.assignment, 'screen': const PastPapersScreen()},
-      {'title': 'Revision', 'icon': Icons.edit_note, 'screen': const RevisionScreen()},
-      {'title': 'Question Forum', 'icon': Icons.forum, 'screen': const QuestionForumScreen()},
-      {'title': 'Profile', 'icon': Icons.person, 'screen': const ProfileScreen()},
+      {'title': 'Books', 'icon': Icons.menu_book, 'screen': BooksScreen()},
+      {'title': 'Past Papers', 'icon': Icons.assignment, 'screen': PastPapersScreen()},
+      {'title': 'Revision', 'icon': Icons.edit_note, 'screen': RevisionScreen()},
+      {'title': 'Question Forum', 'icon': Icons.forum, 'screen': QuestionForumScreen()},
+      {'title': 'Profile', 'icon': Icons.person, 'screen': ProfileScreen()},
     ];
 
     return Scaffold(
