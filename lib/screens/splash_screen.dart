@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/welcome');
     } else {
       // Fetch role from Firestore
       final snapshot = await FirebaseFirestore.instance
@@ -32,6 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       final role = snapshot.data()?['role'];
 
+      // Check role and navigate to appropriate dashboard
       switch (role) {
         case 'admin':
           Navigator.pushReplacementNamed(context, '/adminDashboard');

@@ -43,9 +43,27 @@ class StudentDashboard extends StatelessWidget {
                   children: [
                     _buildCard(
                       context,
+                      icon: Icons.inbox,
+                      label: 'Messages',
+                      onTap: () => _navigate(context, '/studentInbox'),
+                    ),
+                    _buildCard(
+                      context,
+                      icon: Icons.chat_bubble_outline,
+                      label: 'Chat with Others',
+                      onTap: () => _navigate(context, '/chat'),
+                    ),
+                    _buildCard(
+                      context,
                       icon: Icons.book,
-                      label: 'Books',
+                      label: 'Books & Materials',
                       onTap: () => _navigate(context, '/books'),
+                    ),
+                    _buildCard(
+                      context,
+                      icon: Icons.upload_file,
+                      label: 'Upload Material',
+                      onTap: () => _navigate(context, '/uploadBook'),
                     ),
                     _buildCard(
                       context,
@@ -56,7 +74,7 @@ class StudentDashboard extends StatelessWidget {
                     _buildCard(
                       context,
                       icon: Icons.school,
-                      label: 'Revision',
+                      label: 'Revision Center',
                       onTap: () => _navigate(context, '/revision'),
                     ),
                     _buildCard(
@@ -68,7 +86,7 @@ class StudentDashboard extends StatelessWidget {
                     _buildCard(
                       context,
                       icon: Icons.person,
-                      label: 'Profile',
+                      label: 'My Profile',
                       onTap: () => _navigate(context, '/profile'),
                     ),
                   ],

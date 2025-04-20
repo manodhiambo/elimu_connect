@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class TeacherDashboard extends StatelessWidget {
-  const TeacherDashboard({super.key});
+import 'student_inbox_screen.dart';
+import 'upload_book_screen.dart';
+import 'upload_paper_screen.dart';
+import 'question_forum_screen.dart';
+import 'profile_screen.dart';
 
-  void _navigate(BuildContext context, String routeName) {
-    Navigator.pushNamed(context, routeName);
+class TeacherDashboard extends StatelessWidget {
+  const TeacherDashboard({Key? key}) : super(key: key);
+
+  void _navigateTo(BuildContext context, Widget screen) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 
   @override
@@ -18,11 +24,11 @@ class TeacherDashboard extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushReplacementNamed('/login');
             },
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -31,7 +37,7 @@ class TeacherDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome Teacher, ${user?.email ?? ""}',
+              'Welcome, ${user?.email ?? "Teacher"}!',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 20),
@@ -43,41 +49,34 @@ class TeacherDashboard extends StatelessWidget {
                   children: [
                     _buildCard(
                       context,
-                      icon: Icons.book,
-                      label: 'Upload Book',
-                      onTap: () => _navigate(context, '/uploadBook'),
+                      icon: Icons.mail_outline,
+                      label: 'Inbox',
+                      onTap: () => _navigateTo(context, StudentInboxScreen()),
                     ),
                     _buildCard(
                       context,
-                      icon: Icons.picture_as_pdf,
-                      label: 'Upload Paper',
-                      onTap: () => _navigate(context, '/uploadPaper'),
+                      icon: Icons.book_outlined,
+                      label: 'Upload Books',
+                      onTap: () => _navigateTo(context, const UploadBookScreen()),
                     ),
                     _buildCard(
                       context,
-                      icon: Icons.forum,
+                      icon: Icons.picture_as_pdf_outlined,
+                      label: 'Upload Papers',
+                      onTap: () => _navigateTo(context, const UploadPaperScreen()),
+                    ),
+                    _buildCard(
+                      context,
+                      icon: Icons.forum_outlined,
                       label: 'Question Forum',
-                      onTap: () => _navigate(context, '/forum'),
+                      onTap: () => _navigateTo(context, const QuestionForumScreen()),
                     ),
                     _buildCard(
                       context,
-                      icon: Icons.person,
-                      label: 'Profile',
-                      onTap: () => _navigate(context, '/profile'),
+                      icon: Icons.account_circle_outlined,
+                      label: 'My Profile',
+                      onTap: () => _navigateTo(context, const ProfileScreen()),
                     ),
-                    // Uncomment when ready:
-                    // _buildCard(
-                    //   context,
-                    //   icon: Icons.assignment,
-                    //   label: 'Assign Homework',
-                    //   onTap: () => _navigate(context, '/assignHomework'),
-                    // ),
-                    // _buildCard(
-                    //   context,
-                    //   icon: Icons.bar_chart,
-                    //   label: 'Performance',
-                    //   onTap: () => _navigate(context, '/studentPerformance'),
-                    // ),
                   ],
                 ),
               ),
@@ -107,7 +106,7 @@ class TeacherDashboard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 36, color: Colors.orange[800]),
+                Icon(icon, size: 36, color: Colors.deepPurple),
                 const SizedBox(height: 8),
                 Text(
                   label,
