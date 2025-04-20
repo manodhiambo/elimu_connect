@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class ManageTeachersScreen extends StatefulWidget {
-  const ManageTeachersScreen({super.key});
+  const ManageTeachersScreen({super.key}); // ✅ const constructor
 
   @override
   State<ManageTeachersScreen> createState() => _ManageTeachersScreenState();
@@ -10,161 +10,165 @@ class ManageTeachersScreen extends StatefulWidget {
 
 class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _subjectController = TextEditingController();
+  String _name = '';
+  String _email = '';
+  String _password = '';
 
-  String? _editingTeacherId;
+  Future<void> _addTeacher() async {
+    final isValid = _formKey.currentState?.validate();
+    if (isValid ?? false) {
+      _formKey.currentState?.save();
 
-  Future<void> _submitTeacher() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final teacherData = {
-      'name': _nameController.text.trim(),
-      'email': _emailController.text.trim(),
-      'subject': _subjectController.text.trim(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
-
-    try {
-      if (_editingTeacherId == null) {
-        // Add new teacher
-        await FirebaseFirestore.instance.collection('teachers').add({
-          ...teacherData,
+      try {
+        await FirebaseFirestore.instance.collection('users').add({
+          'name': _name,
+          'email': _email,
+          'password': _password,
+          'role': 'teacher',
           'createdAt': FieldValue.serverTimestamp(),
         });
-      } else {
-        // Update existing teacher
-        await FirebaseFirestore.instance
-            .collection('teachers')
-            .doc(_editingTeacherId)
-            .update(teacherData);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Teacher added successfully!')),
+          );
+          Navigator.of(context).pop(); // Close dialog after success
+        }
+      } catch (e) {
+        debugPrint('Error adding teacher: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to add teacher')),
+          );
+        }
       }
-
-      Navigator.pop(context); // Close modal
-      _clearForm();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Operation failed: $e')),
-      );
     }
   }
 
-  void _clearForm() {
-    _nameController.clear();
-    _emailController.clear();
-    _subjectController.clear();
-    _editingTeacherId = null;
-  }
-
-  void _showTeacherForm({Map<String, dynamic>? teacher, String? id}) {
-    if (teacher != null) {
-      _nameController.text = teacher['name'];
-      _emailController.text = teacher['email'];
-      _subjectController.text = teacher['subject'];
-      _editingTeacherId = id;
-    }
-
-    showModalBottomSheet(
+  void _showAddTeacherDialog() {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      builder: (_) => Padding(
-        padding: MediaQuery.of(context).viewInsets,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add New Teacher'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  _editingTeacherId == null ? 'Add Teacher' : 'Edit Teacher',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
                 TextFormField(
-                  controller: _nameController,
                   decoration: const InputDecoration(labelText: 'Full Name'),
-                  validator: (value) => value!.isEmpty ? 'Enter name' : null,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Enter name' : null,
+                  onSaved: (val) => _name = val ?? '',
                 ),
                 TextFormField(
-                  controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (value) => value!.isEmpty ? 'Enter email' : null,
+                  validator: (val) => val == null || !val.contains('@')
+                      ? 'Enter valid email'
+                      : null,
+                  onSaved: (val) => _email = val ?? '',
                 ),
                 TextFormField(
-                  controller: _subjectController,
-                  decoration: const InputDecoration(labelText: 'Subject'),
-                  validator: (value) => value!.isEmpty ? 'Enter subject' : null,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _submitTeacher,
-                  child: const Text('Save'),
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                  validator: (val) => val == null || val.length < 6
+                      ? 'Min 6 characters'
+                      : null,
+                  onSaved: (val) => _password = val ?? '',
                 ),
               ],
             ),
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: _addTeacher,
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
   }
 
-  Future<void> _deleteTeacher(String docId) async {
-    try {
-      await FirebaseFirestore.instance.collection('teachers').doc(docId).delete();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Delete failed: $e')),
-      );
-    }
+  void _confirmDeleteTeacher(String id, String name) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Teacher'),
+        content: Text('Are you sure you want to delete "$name"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance.collection('users').doc(id).delete();
+              if (mounted) Navigator.of(ctx).pop();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Teachers')),
+      appBar: AppBar(
+        title: const Text('Manage Teachers'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _showAddTeacherDialog,
+          ),
+        ],
+      ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('teachers').orderBy('name').snapshots(),
-        builder: (context, snapshot) {
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .where('role', isEqualTo: 'teacher')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No teachers found.'));
-          }
 
-          final teachers = snapshot.data!.docs;
+          final teachers = snapshot.data?.docs ?? [];
+
+          if (teachers.isEmpty) {
+            return const Center(child: Text('No teachers added yet.'));
+          }
 
           return ListView.builder(
             itemCount: teachers.length,
-            itemBuilder: (context, index) {
-              final doc = teachers[index];
-              final teacher = doc.data() as Map<String, dynamic>;
-
+            itemBuilder: (ctx, i) {
+              final teacher = teachers[i];
               return ListTile(
+                leading: CircleAvatar(
+                  child: Text(
+                    teacher['name'][0].toUpperCase(),
+                  ),
+                ),
                 title: Text(teacher['name']),
-                subtitle: Text('${teacher['email']} • ${teacher['subject']}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _showTeacherForm(teacher: teacher, id: doc.id),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteTeacher(doc.id),
-                    ),
-                  ],
+                subtitle: Text(teacher['email']),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () =>
+                      _confirmDeleteTeacher(teacher.id, teacher['name']),
                 ),
               );
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showTeacherForm(),
-        child: const Icon(Icons.add),
       ),
     );
   }

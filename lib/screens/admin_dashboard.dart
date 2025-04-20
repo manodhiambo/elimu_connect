@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'manage_teachers_screen.dart';
 import 'manage_students_screen.dart';
 import 'upload_book_screen.dart';
@@ -28,8 +28,7 @@ class AdminDashboard extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             const Text(
               'Admin Tools',
@@ -43,7 +42,7 @@ class AdminDashboard extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const ManageTeachersScreen(),
+                    builder: (_) => ManageTeachersScreen(),
                   ),
                 );
               },
@@ -54,7 +53,7 @@ class AdminDashboard extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const ManageStudentsScreen(),
+                    builder: (_) => ManageStudentsScreen(),
                   ),
                 );
               },
@@ -65,7 +64,7 @@ class AdminDashboard extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const UploadBookScreen(),
+                    builder: (_) => UploadBookScreen(),
                   ),
                 );
               },
@@ -76,7 +75,7 @@ class AdminDashboard extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const UploadPaperScreen(),
+                    builder: (_) => UploadPaperScreen(),
                   ),
                 );
               },
@@ -87,7 +86,7 @@ class AdminDashboard extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const AppSettingsScreen(),
+                    builder: (_) => AppSettingsScreen(),
                   ),
                 );
               },
@@ -98,7 +97,7 @@ class AdminDashboard extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const AdminProfileScreen(),
+                    builder: (_) => AdminProfileScreen(),
                   ),
                 );
               },
