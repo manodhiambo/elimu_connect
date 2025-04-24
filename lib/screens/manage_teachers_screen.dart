@@ -102,10 +102,9 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                         decoration:
                             const InputDecoration(labelText: 'Password'),
                         obscureText: true,
-                        validator: (val) =>
-                            val == null || val.length < 6
-                                ? 'Min 6 characters'
-                                : null,
+                        validator: (val) => val == null || val.length < 6
+                            ? 'Min 6 characters'
+                            : null,
                         onSaved: (val) => _password = val ?? '',
                       ),
                     ],
@@ -213,8 +212,9 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
             itemCount: teachers.length,
             itemBuilder: (ctx, i) {
               final teacher = teachers[i];
-              final name = teacher['name'] ?? 'Unknown';
-              final email = teacher['email'] ?? 'Unknown';
+              final data = teacher.data() as Map<String, dynamic>;
+              final name = data['name'] ?? 'Unknown';
+              final email = data['email'] ?? 'Unknown';
 
               return ListTile(
                 leading: CircleAvatar(
@@ -226,8 +226,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                 subtitle: Text(email),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () =>
-                      _confirmDeleteTeacher(teacher.id, name),
+                  onPressed: () => _confirmDeleteTeacher(teacher.id, name),
                 ),
               );
             },

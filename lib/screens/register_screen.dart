@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'login_screen.dart';
 
+const String adminSecretCode = 'ELIMU2025ADMIN'; // Change this to your real code
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -18,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final TextEditingController _secretCodeController = TextEditingController();
 
   String selectedRole = 'student'; // Default role
 
@@ -30,6 +33,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (passwordController.text != confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    if (selectedRole == 'admin' &&
+        _secretCodeController.text.trim() != adminSecretCode) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid Admin Secret Code')),
       );
       return;
     }
@@ -82,11 +93,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       UserCredential userCredential;
 
       if (kIsWeb) {
-        // Web flow
         GoogleAuthProvider googleProvider = GoogleAuthProvider();
         userCredential = await _auth.signInWithPopup(googleProvider);
       } else {
-        // Mobile flow
         final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
         if (googleUser == null) {
           setState(() => isLoading = false);
@@ -107,12 +116,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final user = userCredential.user;
       if (user == null) throw Exception("User is null after sign-in");
 
-      // Save to Firestore if new
       final doc = await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) {
         final nameParts = user.displayName?.split(' ') ?? [];
         final firstName = nameParts.isNotEmpty ? nameParts.first : '';
-        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+        final lastName =
+            nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
 
         await _firestore.collection('users').doc(user.uid).set({
           'firstName': firstName,
@@ -125,7 +134,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Signed in with Google')),
       );
@@ -194,6 +202,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration:
                         const InputDecoration(labelText: 'Select Role'),
                   ),
+                  if (selectedRole == 'admin')
+                    TextField(
+                      controller: _secretCodeController,
+                      obscureText: true,
+                      decoration:
+                          const InputDecoration(labelText: 'Admin Secret Code'),
+                    ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: register,

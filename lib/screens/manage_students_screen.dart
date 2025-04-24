@@ -70,17 +70,21 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
     }
   }
 
+  // ✅  FIXED student stream logic
   Stream<QuerySnapshot> _studentStream() {
-    final query = FirebaseFirestore.instance
-        .collection('students')
-        .orderBy('createdAt', descending: true);
+    final collection = FirebaseFirestore.instance.collection('students');
 
-    return _filter.isEmpty
-        ? query.snapshots()
-        : query
-            .where('name', isGreaterThanOrEqualTo: _filter)
-            .where('name', isLessThanOrEqualTo: '$_filter\uf8ff')
-            .snapshots();
+    // If no filter, fetch all students sorted by creation date
+    if (_filter.isEmpty) {
+      return collection.orderBy('createdAt', descending: true).snapshots();
+    } else {
+      // Filtering logic for search functionality
+      return collection
+          .orderBy('name')
+          .startAt([_filter])
+          .endAt(['$_filter\uf8ff']) // allows partial matches for filtering
+          .snapshots();
+    }
   }
 
   @override
@@ -144,6 +148,12 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
+                  if (snapshot.hasError) {
+                    return Center(
+                        child: Text('Error: ${snapshot.error}',
+                            style: const TextStyle(color: Colors.red)));
+                  }
+
                   final students = snapshot.data?.docs ?? [];
 
                   if (students.isEmpty) {
@@ -158,8 +168,6 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                       final id = doc.id;
                       final name = data['name'] ?? '';
                       final email = data['email'] ?? '';
-
-                      // 👇 Generate unique threadId for chat
                       final threadId = generateThreadId(currentUserId, id);
 
                       return ListTile(

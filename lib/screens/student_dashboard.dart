@@ -61,12 +61,6 @@ class StudentDashboard extends StatelessWidget {
                     ),
                     _buildCard(
                       context,
-                      icon: Icons.upload_file,
-                      label: 'Upload Material',
-                      onTap: () => _navigate(context, '/uploadBook'),
-                    ),
-                    _buildCard(
-                      context,
                       icon: Icons.description,
                       label: 'Past Papers',
                       onTap: () => _navigate(context, '/pastPapers'),

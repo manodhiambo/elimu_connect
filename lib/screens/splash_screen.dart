@@ -17,34 +17,45 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate splash
+    await Future.delayed(const Duration(seconds: 2)); // Simulate splash duration
 
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
       Navigator.pushReplacementNamed(context, '/welcome');
     } else {
-      // Fetch role from Firestore
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
-      final role = snapshot.data()?['role'];
+        final userData = snapshot.data();
+        final role = userData?['role'];
+        final userName = userData?['username'] ?? 'Unknown';
+        final userId = user.uid;
 
-      // Check role and navigate to appropriate dashboard
-      switch (role) {
-        case 'admin':
-          Navigator.pushReplacementNamed(context, '/adminDashboard');
-          break;
-        case 'teacher':
-          Navigator.pushReplacementNamed(context, '/teacherDashboard');
-          break;
-        case 'student':
-          Navigator.pushReplacementNamed(context, '/studentDashboard');
-          break;
-        default:
-          Navigator.pushReplacementNamed(context, '/login');
+        final args = {
+          'userId': userId,
+          'userName': userName,
+        };
+
+        switch (role) {
+          case 'admin':
+            Navigator.pushReplacementNamed(context, '/adminDashboard', arguments: args);
+            break;
+          case 'teacher':
+            Navigator.pushReplacementNamed(context, '/teacherDashboard', arguments: args);
+            break;
+          case 'student':
+            Navigator.pushReplacementNamed(context, '/studentDashboard', arguments: args);
+            break;
+          default:
+            Navigator.pushReplacementNamed(context, '/login');
+        }
+      } catch (e) {
+        debugPrint('Error fetching user data: $e');
+        Navigator.pushReplacementNamed(context, '/login');
       }
     }
   }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'manage_teachers_screen.dart';
 import 'manage_students_screen.dart';
+import 'manage_users_screen.dart'; // ✅ NEW
 import 'upload_book_screen.dart';
 import 'upload_paper_screen.dart';
 import 'app_settings_screen.dart';
@@ -64,9 +65,15 @@ class AdminDashboard extends StatelessWidget {
                     ),
                     _buildCard(
                       context,
+                      icon: Icons.group_outlined,
+                      label: 'Manage Users', // ✅ NEW CARD
+                      onTap: () => _navigateTo(context, const ManageUsersScreen()),
+                    ),
+                    _buildCard(
+                      context,
                       icon: Icons.mail_outline,
                       label: 'Message Center',
-                      onTap: () => _navigateTo(context, StudentInboxScreen()), // monitoring messages
+                      onTap: () => _navigateTo(context, StudentInboxScreen()),
                     ),
                     _buildCard(
                       context,

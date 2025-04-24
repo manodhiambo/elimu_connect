@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String userId;
-  final String userName;
-  final String threadId;
+  final String userId;      // ID of the person you're chatting with
+  final String userName;    // Name of the person you're chatting with
+  final String threadId;    // Unique ID for this chat thread
 
   const ChatScreen({
     Key? key,
@@ -31,7 +31,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _showEmojiPicker = false;
   bool _isUploadingImage = false;
 
-  // Send message function
   void _sendMessage({String? imageUrl}) async {
     final currentUser = _auth.currentUser;
     if ((imageUrl == null && _messageController.text.trim().isEmpty) || currentUser == null) return;
@@ -42,8 +41,8 @@ class _ChatScreenState extends State<ChatScreen> {
       'imageUrl': imageUrl ?? '',
       'timestamp': FieldValue.serverTimestamp(),
       'senderId': currentUser.uid,
+      'senderName': currentUser.displayName ?? 'Me',
       'receiverId': widget.userId,
-      'senderName': currentUser.displayName ?? 'Anonymous',
       'receiverName': widget.userName,
       'seen': false,
     });
@@ -52,7 +51,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
   }
 
-  // Scroll to the bottom after a message is sent
   void _scrollToBottom() {
     Future.delayed(Duration(milliseconds: 200), () {
       if (_scrollController.hasClients) {
@@ -65,7 +63,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  // Pick image for the chat
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -85,7 +82,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Mark messages as seen when they are read
   void _markMessagesAsSeen(QuerySnapshot snapshot) async {
     final currentUser = _auth.currentUser;
     for (var doc in snapshot.docs) {
@@ -96,7 +92,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Build the message bubble (either text or image)
   Widget _buildMessageBubble(Map<String, dynamic> message, bool isMe) {
     final avatar = CircleAvatar(
       backgroundColor: Colors.grey[300],

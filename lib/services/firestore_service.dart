@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // ================== BOOKS ==================
 
@@ -19,11 +21,11 @@ class FirestoreService {
   }
 
   Stream<QuerySnapshot> getBooks() {
-  return _db
-      .collection('books')
-      .orderBy('timestamp', descending: true)
-      .snapshots();
-}
+    return _db
+        .collection('books')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
 
   Future<void> addBook(Map<String, dynamic> bookData) async {
     await _db.collection('books').add(bookData);
@@ -39,7 +41,7 @@ class FirestoreService {
     await _db.collection('past_papers').add({
       'subject': subject,
       'year': year,
-      'fileUrl': url, // Use 'fileUrl' to match UI usage
+      'fileUrl': url,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
@@ -119,5 +121,45 @@ class FirestoreService {
         .map((snapshot) => snapshot.docs
             .map((doc) => doc.data() as Map<String, dynamic>)
             .toList());
+  }
+
+  // ================== USERS ==================
+
+  Future<void> createUserInFirestore({
+    required String role, // 'admin', 'teacher', 'student'
+    required String userName,
+  }) async {
+    final user = _auth.currentUser;
+
+    if (user == null) return;
+
+    final docRef = _db.collection('users').doc(user.uid);
+
+    await docRef.set({
+      'userId': user.uid,
+      'userName': userName,
+      'role': role,
+      'email': user.email,
+      'timestamp': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  // ================== ADMIN VIEW ==================
+
+  Stream<List<Map<String, dynamic>>> getUsersByRole(String role) {
+    return _db
+        .collection('users')
+        .where('role', isEqualTo: role)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList());
+  }
+
+  Stream<List<Map<String, dynamic>>> getAllTeachers() {
+    return getUsersByRole('teacher');
+  }
+
+  Stream<List<Map<String, dynamic>>> getAllStudents() {
+    return getUsersByRole('student');
   }
 }

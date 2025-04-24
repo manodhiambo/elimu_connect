@@ -25,6 +25,7 @@ import 'screens/app_settings_screen.dart';
 import 'screens/admin_profile_screen.dart';
 import 'screens/student_inbox_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/manage_users_screen.dart'; // Import your new Manage Users Screen
 
 // Import your app theme
 import 'theme/app_theme.dart';
@@ -71,6 +72,7 @@ class ElimuConnectApp extends StatelessWidget {
         '/settings': (context) => AppSettingsScreen(),
         '/adminProfile': (context) => AdminProfileScreen(),
         '/studentInbox': (context) => StudentInboxScreen(),
+        '/manageUsers': (context) => ManageUsersScreen(), // New route for Manage Users
       },
       // Dynamic route handler for chat
       onGenerateRoute: (settings) {
@@ -78,19 +80,19 @@ class ElimuConnectApp extends StatelessWidget {
           final args = settings.arguments as Map<String, dynamic>?;
 
           if (args != null &&
-              args.containsKey('userId') &&
-              args.containsKey('userName') &&
+              args.containsKey('userId') && 
+              args.containsKey('userName') && 
               args.containsKey('threadId')) {
             return MaterialPageRoute(
               builder: (context) => ChatScreen(
                 userId: args['userId'],
                 userName: args['userName'],
-                threadId: args['threadId'], // Add threadId here
+                threadId: args['threadId'], // Pass threadId here
               ),
             );
           }
 
-          // Fallback for missing args
+          // Fallback for missing arguments
           return MaterialPageRoute(
             builder: (context) => Scaffold(
               body: Center(
