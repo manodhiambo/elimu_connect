@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Import Firebase
-import 'firebase_options.dart'; // Import your Firebase config file
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // Import your screens
 import 'screens/splash_screen.dart';
@@ -24,19 +24,16 @@ import 'screens/manage_students_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/admin_profile_screen.dart';
 import 'screens/student_inbox_screen.dart';
+import 'screens/chat_screen.dart';
 
-// Import your app theme (ensure you have this file)
+// Import your app theme
 import 'theme/app_theme.dart';
 
 void main() async {
-  // Ensure Firebase is initialized before running the app
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Firebase with the config file
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const ElimuConnectApp());
 }
 
@@ -48,7 +45,7 @@ class ElimuConnectApp extends StatelessWidget {
     return MaterialApp(
       title: 'ElimuConnect',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme, // Assuming AppTheme is defined
+      theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       initialRoute: '/',
@@ -74,6 +71,36 @@ class ElimuConnectApp extends StatelessWidget {
         '/settings': (context) => AppSettingsScreen(),
         '/adminProfile': (context) => AdminProfileScreen(),
         '/studentInbox': (context) => StudentInboxScreen(),
+      },
+      // Dynamic route handler for chat
+      onGenerateRoute: (settings) {
+        if (settings.name == '/chat') {
+          final args = settings.arguments as Map<String, dynamic>?;
+
+          if (args != null &&
+              args.containsKey('userId') &&
+              args.containsKey('userName') &&
+              args.containsKey('threadId')) {
+            return MaterialPageRoute(
+              builder: (context) => ChatScreen(
+                userId: args['userId'],
+                userName: args['userName'],
+                threadId: args['threadId'], // Add threadId here
+              ),
+            );
+          }
+
+          // Fallback for missing args
+          return MaterialPageRoute(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: Text('Chat screen requires userId, userName, and threadId arguments.'),
+              ),
+            ),
+          );
+        }
+
+        return null; // Default fallback (could be a 404 screen)
       },
     );
   }

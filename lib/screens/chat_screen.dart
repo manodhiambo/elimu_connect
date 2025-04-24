@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _showEmojiPicker = false;
   bool _isUploadingImage = false;
 
+  // Send message function
   void _sendMessage({String? imageUrl}) async {
     final currentUser = _auth.currentUser;
     if ((imageUrl == null && _messageController.text.trim().isEmpty) || currentUser == null) return;
@@ -52,6 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
   }
 
+  // Scroll to the bottom after a message is sent
   void _scrollToBottom() {
     Future.delayed(Duration(milliseconds: 200), () {
       if (_scrollController.hasClients) {
@@ -64,6 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  // Pick image for the chat
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -83,6 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  // Mark messages as seen when they are read
   void _markMessagesAsSeen(QuerySnapshot snapshot) async {
     final currentUser = _auth.currentUser;
     for (var doc in snapshot.docs) {
@@ -93,6 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  // Build the message bubble (either text or image)
   Widget _buildMessageBubble(Map<String, dynamic> message, bool isMe) {
     final avatar = CircleAvatar(
       backgroundColor: Colors.grey[300],
@@ -146,6 +150,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final currentUser = _auth.currentUser;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text('Chat with ${widget.userName}'),
         actions: [
@@ -170,7 +175,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
 
                 final messages = snapshot.data!.docs;
-
                 _markMessagesAsSeen(snapshot.data!);
 
                 return ListView.builder(
@@ -211,6 +215,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   controller: _messageController,
                   decoration: const InputDecoration(
                     hintText: 'Type your message...',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10),
                   ),
                   onTap: () {
                     if (_showEmojiPicker) {
