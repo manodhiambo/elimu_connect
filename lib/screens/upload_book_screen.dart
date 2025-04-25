@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ class UploadBookScreen extends StatefulWidget {
 
 class _UploadBookScreenState extends State<UploadBookScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -23,7 +23,10 @@ class _UploadBookScreenState extends State<UploadBookScreen> {
   bool _isLoading = false;
 
   Future<void> _pickPDF() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
     if (result != null && result.files.single.path != null) {
       setState(() {
         _pdfFile = File(result.files.single.path!);
@@ -34,6 +37,7 @@ class _UploadBookScreenState extends State<UploadBookScreen> {
 
   Future<void> _uploadBook() async {
     if (!_formKey.currentState!.validate()) return;
+
     if (_pdfFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a PDF file to upload.')),
@@ -41,10 +45,23 @@ class _UploadBookScreenState extends State<UploadBookScreen> {
       return;
     }
 
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to upload.')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
-      final storageRef = FirebaseStorage.instance.ref().child('books/$_fileName');
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('books/${DateTime.now().millisecondsSinceEpoch}_$_fileName');
+
+      print("📁 Uploading file to: ${storageRef.fullPath}");
+
       final uploadTask = await storageRef.putFile(_pdfFile!);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
@@ -54,10 +71,11 @@ class _UploadBookScreenState extends State<UploadBookScreen> {
         'description': _descriptionController.text.trim(),
         'downloadUrl': downloadUrl,
         'uploadedAt': FieldValue.serverTimestamp(),
+        'uploadedBy': user.uid,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Book uploaded successfully!')),
+        const SnackBar(content: Text('✅ Book uploaded successfully!')),
       );
 
       _formKey.currentState!.reset();
@@ -66,6 +84,7 @@ class _UploadBookScreenState extends State<UploadBookScreen> {
         _fileName = null;
       });
     } catch (e) {
+      print("❌ Upload failed: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Upload failed: $e')),
       );
@@ -109,7 +128,7 @@ class _UploadBookScreenState extends State<UploadBookScreen> {
               if (_fileName != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Selected File: $_fileName'),
+                  child: Text('📄 Selected File: $_fileName'),
                 ),
               const SizedBox(height: 20),
               _isLoading

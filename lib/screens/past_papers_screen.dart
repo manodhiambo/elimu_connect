@@ -26,20 +26,27 @@ class PastPapersScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestoreService.getPastPapers(),
         builder: (context, snapshot) {
+          // Handle loading state
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+
+          // Handle error state
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
+
+          // Handle no data state
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('No past papers available'));
           }
 
+          // Process the data from Firestore
           final papers = snapshot.data!.docs.map((doc) {
             return doc.data() as Map<String, dynamic>;
           }).toList();
 
+          // Display the list of papers
           return ListView.builder(
             itemCount: papers.length,
             itemBuilder: (context, index) {
@@ -48,10 +55,21 @@ class PastPapersScreen extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: ListTile(
                   title: Text(paper['title'] ?? 'No title'),
-                  subtitle: Text('Subject: ${paper['subject'] ?? 'N/A'} | Year: ${paper['year'] ?? 'N/A'}'),
+                  subtitle: Text(
+                      'Subject: ${paper['subject'] ?? 'N/A'} | Year: ${paper['year'] ?? 'N/A'}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.picture_as_pdf, color: Colors.red),
-                    onPressed: () => _launchPdf(context, paper['fileUrl'] ?? ''),
+                    onPressed: () {
+                      // Ensure the PDF URL is not null before attempting to launch
+                      final pdfUrl = paper['fileUrl'] ?? '';
+                      if (pdfUrl.isNotEmpty) {
+                        _launchPdf(context, pdfUrl);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('No PDF file available')),
+                        );
+                      }
+                    },
                   ),
                 ),
               );

@@ -13,7 +13,6 @@ class UploadPaperScreen extends StatefulWidget {
 
 class _UploadPaperScreenState extends State<UploadPaperScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
@@ -38,6 +37,7 @@ class _UploadPaperScreenState extends State<UploadPaperScreen> {
 
   Future<void> _uploadPaper() async {
     if (!_formKey.currentState!.validate()) return;
+
     if (_pdfFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a PDF file to upload.')),
@@ -48,7 +48,10 @@ class _UploadPaperScreenState extends State<UploadPaperScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final storageRef = FirebaseStorage.instance.ref().child('past_papers/$_fileName');
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('past_papers/$_fileName');
+
       final uploadTask = await storageRef.putFile(_pdfFile!);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
@@ -65,6 +68,10 @@ class _UploadPaperScreenState extends State<UploadPaperScreen> {
       );
 
       _formKey.currentState!.reset();
+      _titleController.clear();
+      _subjectController.clear();
+      _yearController.clear();
+
       setState(() {
         _pdfFile = null;
         _fileName = null;
@@ -91,18 +98,21 @@ class _UploadPaperScreenState extends State<UploadPaperScreen> {
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Paper Title'),
-                validator: (value) => value!.isEmpty ? 'Enter title' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Enter title' : null,
               ),
               TextFormField(
                 controller: _subjectController,
                 decoration: const InputDecoration(labelText: 'Subject'),
-                validator: (value) => value!.isEmpty ? 'Enter subject' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Enter subject' : null,
               ),
               TextFormField(
                 controller: _yearController,
                 decoration: const InputDecoration(labelText: 'Year'),
                 keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Enter year' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Enter year' : null,
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -112,8 +122,8 @@ class _UploadPaperScreenState extends State<UploadPaperScreen> {
               ),
               if (_fileName != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Selected File: $_fileName'),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text('📄 Selected File: $_fileName'),
                 ),
               const SizedBox(height: 20),
               _isLoading
