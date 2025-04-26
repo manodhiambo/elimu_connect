@@ -35,15 +35,15 @@ dependencies:
   google_sign_in: ^6.1.6
   cloud_firestore: ^5.6.6
   intl: ^0.20.2
-  file_picker: ^5.2.10
+  file_picker: ^10.1.2
   firebase_storage: ^12.4.5
   url_launcher: ^6.0.9
   provider: ^6.1.2
   google_fonts: ^6.1.0
-  csv: ^5.0.2
+  csv: ^6.0.0
   firebase_messaging: ^15.2.5
   image_picker: ^1.0.7
-  emoji_picker_flutter: ^1.6.0
+  emoji_picker_flutter: ^4.3.0
   fluttertoast: ^8.2.4
 
   # The following adds the Cupertino Icons font to your application.
@@ -74,6 +74,7 @@ flutter:
   assets:
     - assets/images/background.jpg
     - assets/images/logo.png
+  generate: false
 
   # To add assets to your application, add an assets section, like this:
   # assets:

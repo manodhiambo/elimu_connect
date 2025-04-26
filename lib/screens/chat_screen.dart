@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String userId;      // ID of the person you're chatting with
-  final String userName;    // Name of the person you're chatting with
-  final String threadId;    // Unique ID for this chat thread
+  final String userId;
+  final String userName;
+  final String threadId;
 
   const ChatScreen({
     Key? key,
@@ -52,11 +52,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 200), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           0.0,
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
@@ -97,7 +97,7 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: Colors.grey[300],
       child: Text(
         message['senderName'] != null ? message['senderName'][0].toUpperCase() : '?',
-        style: TextStyle(fontWeight: FontWeight.bold),
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
     );
 
@@ -150,7 +150,7 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text('Chat with ${widget.userName}'),
         actions: [
           IconButton(
-            icon: Icon(Icons.attach_file),
+            icon: const Icon(Icons.attach_file),
             onPressed: _pickImage,
           ),
         ],
@@ -190,8 +190,8 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           if (_isUploadingImage)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
               child: LinearProgressIndicator(),
             ),
           const Divider(height: 1),
@@ -200,9 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
               IconButton(
                 icon: Icon(_showEmojiPicker ? Icons.close : Icons.emoji_emotions),
                 onPressed: () {
-                  setState(() {
-                    _showEmojiPicker = !_showEmojiPicker;
-                  });
+                  setState(() => _showEmojiPicker = !_showEmojiPicker);
                 },
               ),
               Expanded(
@@ -233,12 +231,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 onEmojiSelected: (category, emoji) {
                   _messageController.text += emoji.emoji;
                 },
-                config: const Config(
-                  columns: 7,
-                  emojiSizeMax: 32,
-                  verticalSpacing: 0,
-                  horizontalSpacing: 0,
-                ),
               ),
             ),
         ],
