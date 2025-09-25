@@ -140,7 +140,11 @@ ehthumbs.db
 Thumbs.db
 
 # Generated files
+*# Ignore all generated files by default
 *.g.dart
+
+# BUT keep shared models tracked
+!packages/shared/lib/src/models/**/*.g.dart
 *.mocks.dart
 *.config.dart
 

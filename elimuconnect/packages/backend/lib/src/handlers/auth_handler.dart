@@ -5,6 +5,7 @@ import 'package:elimuconnect_shared/shared.dart';
 import '../services/auth_service.dart';
 import '../utils/response_helper.dart';
 import '../middleware/auth_middleware.dart';
+import 'package:elimuconnect_shared/src/models/user/admin_model.dart';
 
 class AuthHandler {
   final AuthService _authService;
