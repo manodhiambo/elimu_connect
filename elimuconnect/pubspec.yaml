@@ -1,0 +1,12 @@
+name: elimuconnect_workspace
+description: ElimuConnect monorepo workspace
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dev_dependencies:
+  melos: ^4.1.0
+
+# This is a workspace file - individual packages have their own pubspec.yaml files

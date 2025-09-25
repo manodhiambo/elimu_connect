@@ -1,36 +1,13 @@
-library elimuconnect_backend;
+#!/usr/bin/env dart
 
-import 'package:shelf_router/shelf_router.dart';
-import 'src/handlers/auth_handler.dart';
-import 'src/handlers/user_handler.dart';
-import 'src/handlers/content_handler.dart';
-import 'src/handlers/assessment_handler.dart';
-import 'src/handlers/messaging_handler.dart';
-import 'src/handlers/school_handler.dart';
-import 'src/middleware/auth_middleware.dart';
+import 'dart:io';
+import 'package:elimuconnect_backend/backend.dart';
 
-Router createRouter() {
-  final router = Router();
-
-  // Health check
-  router.get('/health', (request) {
-    return Response.ok('ElimuConnect API is running');
-  });
-
-  // API v1 routes
-  router.mount('/api/v1/auth', AuthHandler().router);
-  router.mount('/api/v1/users', UserHandler().router);
-  router.mount('/api/v1/schools', SchoolHandler().router);
-  router.mount('/api/v1/content', ContentHandler().router);
-  router.mount('/api/v1/assessments', AssessmentHandler().router);
-  router.mount('/api/v1/messages', MessagingHandler().router);
-
-  return router;
+Future<void> main() async {
+  print('ElimuConnect Backend starting...');
+  
+  // This file is a simple entry point
+  // The actual server implementation is in server.dart
+  print('Use "dart run bin/server.dart" to start the server.');
+  exit(0);
 }
-
-export 'src/config/app_config.dart';
-export 'src/database/connection.dart';
-export 'src/services/services.dart';
-export 'src/repositories/repositories.dart';
-export 'src/middleware/middleware.dart';
-export 'src/utils/utils.dart';

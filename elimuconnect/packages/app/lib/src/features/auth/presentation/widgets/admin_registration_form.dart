@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:elimuconnect_shared/shared.dart';
 import 'package:elimuconnect_design_system/design_system.dart';
 
@@ -100,7 +101,7 @@ class _AdminRegistrationFormState extends ConsumerState<AdminRegistrationForm> {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter your email address';
               }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}).hasMatch(value)) {
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                 return 'Please enter a valid email address';
               }
               return null;
@@ -118,8 +119,7 @@ class _AdminRegistrationFormState extends ConsumerState<AdminRegistrationForm> {
               if (value == null || value.trim().isEmpty) {
                 return 'Please enter your phone number';
               }
-              // Kenya phone number validation
-              final phoneRegex = RegExp(r'^(?:\+254|0)([17]\d{8}));
+              final phoneRegex = RegExp(r'^(?:\+254|0)([17]\d{8})$');
               if (!phoneRegex.hasMatch(value.replaceAll(' ', ''))) {
                 return 'Please enter a valid Kenyan phone number';
               }
@@ -172,9 +172,6 @@ class _AdminRegistrationFormState extends ConsumerState<AdminRegistrationForm> {
               }
               if (value.length < 8) {
                 return 'Password must be at least 8 characters';
-              }
-              if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]').hasMatch(value)) {
-                return 'Password must contain uppercase, lowercase, number, and special character';
               }
               return null;
             },
