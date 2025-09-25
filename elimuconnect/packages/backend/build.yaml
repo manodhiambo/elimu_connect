@@ -1,0 +1,10 @@
+targets:
+  $default:
+    sources:
+      - lib/**
+      - pubspec.yaml
+      # Exclude entrypoints so build_runner won't try to generate code for them
+      - "!bin/**"
+      - "!tool/**"
+      - "!test/**"
+
