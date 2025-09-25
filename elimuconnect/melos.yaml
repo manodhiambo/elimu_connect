@@ -40,3 +40,13 @@ scripts:
       find . -name ".dart_tool" -exec rm -rf {} +
       find . -name "build" -exec rm -rf {} +
     description: Deep clean all packages.
+
+  web:
+    run: |
+      melos exec --scope="elimuconnect_app" -- \
+        "flutter build web && cd build/web && python3 -m http.server 8080"
+    description: Build and serve the Flutter web app at http://localhost:8080.
+
+  web:dev:
+    run: melos exec --scope="elimuconnect_app" -- "flutter run -d chrome"
+    description: Run the Flutter web app in Chrome with hot reload.
