@@ -1,0 +1,238 @@
+import 'package:json_annotation/json_annotation.dart';
+
+enum UserRole {
+  @JsonValue('admin')
+  admin,
+  @JsonValue('teacher')
+  teacher,
+  @JsonValue('student')
+  student,
+  @JsonValue('parent')
+  parent,
+}
+
+enum GradeLevel {
+  @JsonValue('pp1')
+  pp1,
+  @JsonValue('pp2')
+  pp2,
+  @JsonValue('grade_1')
+  grade1,
+  @JsonValue('grade_2')
+  grade2,
+  @JsonValue('grade_3')
+  grade3,
+  @JsonValue('grade_4')
+  grade4,
+  @JsonValue('grade_5')
+  grade5,
+  @JsonValue('grade_6')
+  grade6,
+  @JsonValue('grade_7')
+  grade7,
+  @JsonValue('grade_8')
+  grade8,
+  @JsonValue('grade_9')
+  grade9,
+  @JsonValue('form_1')
+  form1,
+  @JsonValue('form_2')
+  form2,
+  @JsonValue('form_3')
+  form3,
+  @JsonValue('form_4')
+  form4,
+}
+
+enum ContentType {
+  @JsonValue('book')
+  book,
+  @JsonValue('video')
+  video,
+  @JsonValue('audio')
+  audio,
+  @JsonValue('document')
+  document,
+  @JsonValue('quiz')
+  quiz,
+  @JsonValue('lesson')
+  lesson,
+  @JsonValue('assignment')
+  assignment,
+}
+
+enum QuestionType {
+  @JsonValue('multiple_choice')
+  multipleChoice,
+  @JsonValue('true_false')
+  trueFalse,
+  @JsonValue('short_answer')
+  shortAnswer,
+  @JsonValue('essay')
+  essay,
+  @JsonValue('fill_blank')
+  fillBlank,
+  @JsonValue('matching')
+  matching,
+}
+
+enum MessageStatus {
+  @JsonValue('sent')
+  sent,
+  @JsonValue('delivered')
+  delivered,
+  @JsonValue('read')
+  read,
+  @JsonValue('failed')
+  failed,
+}
+
+enum NotificationType {
+  @JsonValue('assignment')
+  assignment,
+  @JsonValue('grade')
+  grade,
+  @JsonValue('announcement')
+  announcement,
+  @JsonValue('message')
+  message,
+  @JsonValue('reminder')
+  reminder,
+  @JsonValue('system')
+  system,
+}
+
+enum SchoolType {
+  @JsonValue('public')
+  public,
+  @JsonValue('private')
+  private,
+  @JsonValue('international')
+  international,
+  @JsonValue('special_needs')
+  specialNeeds,
+}
+
+enum County {
+  @JsonValue('baringo')
+  baringo,
+  @JsonValue('bomet')
+  bomet,
+  @JsonValue('bungoma')
+  bungoma,
+  @JsonValue('busia')
+  busia,
+  @JsonValue('elgeyo_marakwet')
+  elgeyoMarakwet,
+  @JsonValue('embu')
+  embu,
+  @JsonValue('garissa')
+  garissa,
+  @JsonValue('homa_bay')
+  homaBay,
+  @JsonValue('isiolo')
+  isiolo,
+  @JsonValue('kajiado')
+  kajiado,
+  @JsonValue('kakamega')
+  kakamega,
+  @JsonValue('kericho')
+  kericho,
+  @JsonValue('kiambu')
+  kiambu,
+  @JsonValue('kilifi')
+  kilifi,
+  @JsonValue('kirinyaga')
+  kirinyaga,
+  @JsonValue('kisii')
+  kisii,
+  @JsonValue('kisumu')
+  kisumu,
+  @JsonValue('kitui')
+  kitui,
+  @JsonValue('kwale')
+  kwale,
+  @JsonValue('laikipia')
+  laikipia,
+  @JsonValue('lamu')
+  lamu,
+  @JsonValue('machakos')
+  machakos,
+  @JsonValue('makueni')
+  makueni,
+  @JsonValue('mandera')
+  mandera,
+  @JsonValue('marsabit')
+  marsabit,
+  @JsonValue('meru')
+  meru,
+  @JsonValue('migori')
+  migori,
+  @JsonValue('mombasa')
+  mombasa,
+  @JsonValue('murang_a')
+  murangA,
+  @JsonValue('nairobi')
+  nairobi,
+  @JsonValue('nakuru')
+  nakuru,
+  @JsonValue('nandi')
+  nandi,
+  @JsonValue('narok')
+  narok,
+  @JsonValue('nyamira')
+  nyamira,
+  @JsonValue('nyandarua')
+  nyandarua,
+  @JsonValue('nyeri')
+  nyeri,
+  @JsonValue('samburu')
+  samburu,
+  @JsonValue('siaya')
+  siaya,
+  @JsonValue('taita_taveta')
+  taitaTaveta,
+  @JsonValue('tana_river')
+  tanaRiver,
+  @JsonValue('tharaka_nithi')
+  tharakaNithi,
+  @JsonValue('trans_nzoia')
+  transNzoia,
+  @JsonValue('turkana')
+  turkana,
+  @JsonValue('uasin_gishu')
+  uasinGishu,
+  @JsonValue('vihiga')
+  vihiga,
+  @JsonValue('wajir')
+  wajir,
+  @JsonValue('west_pokot')
+  westPokot,
+}
+
+enum Language {
+  @JsonValue('english')
+  english,
+  @JsonValue('swahili')
+  swahili,
+  @JsonValue('kikuyu')
+  kikuyu,
+  @JsonValue('luo')
+  luo,
+  @JsonValue('luhya')
+  luhya,
+  @JsonValue('kalenjin')
+  kalenjin,
+  @JsonValue('kamba')
+  kamba,
+  @JsonValue('kisii')
+  kisii,
+  @JsonValue('meru')
+  meru,
+  @JsonValue('turkana')
+  turkana,
+  @JsonValue('maasai')
+  maasai,
+  @JsonValue('somali')
+  somali,
+}

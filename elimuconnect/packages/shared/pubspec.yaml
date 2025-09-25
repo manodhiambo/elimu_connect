@@ -1,0 +1,27 @@
+name: elimuconnect_shared
+description: Shared models, constants, and utilities for ElimuConnect
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+  crypto: ^3.0.3
+  intl: ^0.19.0
+  uuid: ^4.1.0
+
+dev_dependencies:
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+  test: ^1.24.6
+
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          explicit_to_json: true
+          include_if_null: false
+          field_rename: snake_case

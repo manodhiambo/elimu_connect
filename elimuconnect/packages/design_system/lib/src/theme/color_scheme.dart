@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import '../tokens/colors.dart';
+
+class ElimuColorScheme {
+  static ColorScheme get light => ColorScheme.fromSeed(
+    seedColor: ElimuColors.primary,
+    brightness: Brightness.light,
+    primary: ElimuColors.primary,
+    onPrimary: ElimuColors.onPrimary,
+    primaryContainer: ElimuColors.primaryContainer,
+    onPrimaryContainer: ElimuColors.onPrimaryContainer,
+    secondary: ElimuColors.secondary,
+    onSecondary: ElimuColors.onSecondary,
+    secondaryContainer: ElimuColors.secondaryContainer,
+    onSecondaryContainer: ElimuColors.onSecondaryContainer,
+    tertiary: ElimuColors.tertiary,
+    onTertiary: ElimuColors.onTertiary,
+    tertiaryContainer: ElimuColors.tertiaryContainer,
+    onTertiaryContainer: ElimuColors.onTertiaryContainer,
+    error: ElimuColors.error,
+    onError: ElimuColors.onError,
+    errorContainer: ElimuColors.errorContainer,
+    onErrorContainer: ElimuColors.onErrorContainer,
+    surface: ElimuColors.surface,
+    onSurface: ElimuColors.onSurface,
+    surfaceVariant: ElimuColors.surfaceVariant,
+    onSurfaceVariant: ElimuColors.onSurfaceVariant,
+    background: ElimuColors.background,
+    onBackground: ElimuColors.onBackground,
+  );
+
+  static ColorScheme get dark => ColorScheme.fromSeed(
+    seedColor: ElimuColors.primary,
+    brightness: Brightness.dark,
+    primary: ElimuColors.primary,
+    onPrimary: ElimuColors.onPrimary,
+    primaryContainer: ElimuColors.primary.withOpacity(0.3),
+    onPrimaryContainer: ElimuColors.onPrimary,
+    secondary: ElimuColors.secondary,
+    onSecondary: ElimuColors.onSecondary,
+    secondaryContainer: ElimuColors.secondary.withOpacity(0.3),
+    onSecondaryContainer: ElimuColors.onSecondary,
+    tertiary: ElimuColors.tertiary,
+    onTertiary: ElimuColors.onTertiary,
+    tertiaryContainer: ElimuColors.tertiary.withOpacity(0.3),
+    onTertiaryContainer: ElimuColors.onTertiary,
+    error: ElimuColors.error,
+    onError: ElimuColors.onError,
+    errorContainer: ElimuColors.error.withOpacity(0.3),
+    onErrorContainer: ElimuColors.onError,
+    surface: ElimuColors.darkSurface,
+    onSurface: ElimuColors.darkOnSurface,
+    surfaceVariant: ElimuColors.darkSurface.withOpacity(0.8),
+    onSurfaceVariant: ElimuColors.darkOnSurface.withOpacity(0.8),
+    background: ElimuColors.darkBackground,
+    onBackground: ElimuColors.darkOnSurface,
+  );
+}

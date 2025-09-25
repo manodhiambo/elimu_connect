@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: elimuconnect_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: elimuadmin
+      MONGO_INITDB_ROOT_PASSWORD: elimu123456
+      MONGO_INITDB_DATABASE: elimuconnect
+    volumes:
+      - mongodb_data:/data/db
+      - ./tools/docker/mongodb/init.js:/docker-entrypoint-initdb.d/init.js:ro
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: elimuconnect_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass elimuredis123
+
+  minio:
+    image: minio/minio:latest
+    container_name: elimuconnect_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: elimuminio
+      MINIO_ROOT_PASSWORD: elimuminio123456
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  maildev:
+    image: maildev/maildev
+    container_name: elimuconnect_maildev
+    restart: unless-stopped
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+
+volumes:
+  mongodb_data:
+  minio_data:

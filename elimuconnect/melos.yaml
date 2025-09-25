@@ -1,0 +1,65 @@
+name: elimuconnect
+repository: https://github.com/manodhiambo/elimu_connect
+
+packages:
+  - packages/**
+  - tools/**
+
+command:
+  bootstrap:
+    environment:
+      sdk: ">=3.0.0 <4.0.0"
+      flutter: ">=3.10.0"
+
+scripts:
+  analyze:
+    run: melos exec -- "dart analyze ."
+    description: Run analysis for all packages.
+
+  test:
+    run: melos exec --fail-fast -- "dart test"
+    description: Run all Dart tests in all packages.
+
+  test:flutter:
+    run: melos exec --fail-fast --flutter --dir-exists="test" -- "flutter test"
+    description: Run Flutter tests.
+
+  build:backend:
+    run: melos exec --scope="elimuconnect_backend" -- "dart compile exe bin/server.dart -o bin/server"
+    description: Build backend executable.
+
+  build:app:
+    run: |
+      melos exec --scope="elimuconnect_app" -- "flutter build apk --release"
+      melos exec --scope="elimuconnect_app" -- "flutter build web --release"
+    description: Build Flutter app for all platforms.
+
+  gen:
+    run: melos exec --depends-on="json_serializable" -- "dart run build_runner build --delete-conflicting-outputs"
+    description: Generate code for packages with build_runner.
+
+  clean:deep:
+    run: |
+      melos clean
+      find . -name "pubspec_overrides.yaml" -delete
+      find . -name ".dart_tool" -exec rm -rf {} +
+      find . -name "build" -exec rm -rf {} +
+    description: Deep clean all packages.
+
+  deps:outdated:
+    run: melos exec -- "dart pub outdated"
+    description: Check for outdated dependencies across packages.
+
+  setup:dev:
+    run: |
+      docker-compose -f docker-compose.dev.yml up -d
+      melos bootstrap
+      melos run gen
+    description: Setup development environment.
+
+  deploy:staging:
+    run: |
+      melos run build:backend
+      melos run build:app
+      docker-compose -f docker-compose.staging.yml up -d --build
+    description: Deploy to staging environment.
