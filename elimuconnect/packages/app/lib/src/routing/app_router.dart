@@ -1,49 +1,45 @@
+// File: packages/app/lib/src/routing/app_router.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../core/providers/app_providers.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/registration_page.dart';
-import '../features/dashboard/presentation/pages/student_dashboard.dart';
-import '../features/dashboard/presentation/pages/teacher_dashboard.dart';
-import '../features/dashboard/presentation/pages/parent_dashboard.dart';
-import '../features/dashboard/presentation/pages/admin_dashboard.dart';
-import '../features/library/presentation/pages/library_page.dart';
-import '../features/profile/presentation/pages/profile_page.dart';
-import '../core/providers/auth_providers.dart';
+import '../features/dashboard/student_dashboard/presentation/pages/student_dashboard_page.dart';
+import '../features/dashboard/teacher_dashboard/presentation/pages/teacher_dashboard_page.dart';
+import '../features/dashboard/parent_dashboard/presentation/pages/parent_dashboard_page.dart';
+import '../features/dashboard/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'route_names.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
   
   return GoRouter(
-    initialLocation: RouteNames.login,
+    initialLocation: RouteNames.home,
     redirect: (context, state) {
-      final isLoggedIn = authState.asData?.value != null;
-      final isLoggingIn = state.matchedLocation == RouteNames.login ||
-          state.matchedLocation == RouteNames.register;
+      final isLoggedIn = authState.status == AuthStatus.authenticated;
+      final isLoggingIn = state.location == RouteNames.login || 
+                         state.location == RouteNames.register;
       
       if (!isLoggedIn && !isLoggingIn) {
         return RouteNames.login;
       }
       
       if (isLoggedIn && isLoggingIn) {
-        final user = authState.asData!.value!;
-        switch (user.role) {
-          case UserRole.student:
-            return RouteNames.studentDashboard;
-          case UserRole.teacher:
-            return RouteNames.teacherDashboard;
-          case UserRole.parent:
-            return RouteNames.parentDashboard;
-          case UserRole.admin:
-            return RouteNames.adminDashboard;
-        }
+        return _getHomeRouteForUser(authState.user);
       }
       
       return null;
     },
     routes: [
-      // Authentication Routes
+      GoRoute(
+        path: RouteNames.home,
+        name: 'home',
+        builder: (context, state) {
+          final user = ref.read(currentUserProvider);
+          return _getDashboardForUser(user);
+        },
+      ),
       GoRoute(
         path: RouteNames.login,
         name: 'login',
@@ -54,40 +50,56 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'register',
         builder: (context, state) => const RegistrationPage(),
       ),
-      
-      // Dashboard Routes
       GoRoute(
         path: RouteNames.studentDashboard,
-        name: 'student_dashboard',
-        builder: (context, state) => const StudentDashboard(),
+        name: 'studentDashboard',
+        builder: (context, state) => const StudentDashboardPage(),
       ),
       GoRoute(
         path: RouteNames.teacherDashboard,
-        name: 'teacher_dashboard',
-        builder: (context, state) => const TeacherDashboard(),
+        name: 'teacherDashboard',
+        builder: (context, state) => const TeacherDashboardPage(),
       ),
       GoRoute(
         path: RouteNames.parentDashboard,
-        name: 'parent_dashboard',
-        builder: (context, state) => const ParentDashboard(),
+        name: 'parentDashboard',
+        builder: (context, state) => const ParentDashboardPage(),
       ),
       GoRoute(
         path: RouteNames.adminDashboard,
-        name: 'admin_dashboard',
-        builder: (context, state) => const AdminDashboard(),
-      ),
-      
-      // Feature Routes
-      GoRoute(
-        path: RouteNames.library,
-        name: 'library',
-        builder: (context, state) => const LibraryPage(),
-      ),
-      GoRoute(
-        path: RouteNames.profile,
-        name: 'profile',
-        builder: (context, state) => const ProfilePage(),
+        name: 'adminDashboard',
+        builder: (context, state) => const AdminDashboardPage(),
       ),
     ],
   );
 });
+
+Widget _getDashboardForUser(User? user) {
+  if (user == null) return const LoginPage();
+  
+  switch (user.role) {
+    case UserRole.student:
+      return const StudentDashboardPage();
+    case UserRole.teacher:
+      return const TeacherDashboardPage();
+    case UserRole.parent:
+      return const ParentDashboardPage();
+    case UserRole.admin:
+      return const AdminDashboardPage();
+  }
+}
+
+String _getHomeRouteForUser(User? user) {
+  if (user == null) return RouteNames.login;
+  
+  switch (user.role) {
+    case UserRole.student:
+      return RouteNames.studentDashboard;
+    case UserRole.teacher:
+      return RouteNames.teacherDashboard;
+    case UserRole.parent:
+      return RouteNames.parentDashboard;
+    case UserRole.admin:
+      return RouteNames.adminDashboard;
+  }
+}

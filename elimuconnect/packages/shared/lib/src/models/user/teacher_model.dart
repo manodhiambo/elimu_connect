@@ -1,23 +1,65 @@
+// File: packages/shared/lib/src/models/user/teacher_model.dart
 import 'package:json_annotation/json_annotation.dart';
-import 'package:equatable/equatable.dart';
 import 'user_model.dart';
+import '../common/enums.dart';
 
 part 'teacher_model.g.dart';
 
 @JsonSerializable()
-class TeacherRegistrationRequest extends Equatable {
-  final String name;
-  final String email;
-  final String password;
-  final String phoneNumber;
-  final String tscNumber; // Teachers Service Commission number
+class Teacher extends User {
+  final String tscNumber;
   final String schoolId;
   final List<String> subjectsTaught;
   final List<String> classesAssigned;
   final String qualification;
-  final int yearsOfExperience;
-  final String? specialization;
+  final KenyaCounty countyOfWork;
+  
+  const Teacher({
+    required super.id,
+    required super.name,
+    required super.email,
+    required super.phoneNumber,
+    super.status = UserStatus.active,
+    super.profileImageUrl,
+    required super.createdAt,
+    required super.updatedAt,
+    required this.tscNumber,
+    required this.schoolId,
+    required this.subjectsTaught,
+    required this.classesAssigned,
+    required this.qualification,
+    required this.countyOfWork,
+  }) : super(role: UserRole.teacher);
 
+  factory Teacher.fromJson(Map<String, dynamic> json) => _$TeacherFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$TeacherToJson(this);
+
+  @override
+  List<Object?> get props => [
+    ...super.props,
+    tscNumber,
+    schoolId,
+    subjectsTaught,
+    classesAssigned,
+    qualification,
+    countyOfWork,
+  ];
+}
+
+@JsonSerializable()
+class TeacherRegistrationRequest {
+  final String name;
+  final String email;
+  final String password;
+  final String phoneNumber;
+  final String tscNumber;
+  final String schoolId;
+  final List<String> subjectsTaught;
+  final List<String> classesAssigned;
+  final String qualification;
+  final KenyaCounty countyOfWork;
+  
   const TeacherRegistrationRequest({
     required this.name,
     required this.email,
@@ -28,79 +70,10 @@ class TeacherRegistrationRequest extends Equatable {
     required this.subjectsTaught,
     required this.classesAssigned,
     required this.qualification,
-    required this.yearsOfExperience,
-    this.specialization,
+    required this.countyOfWork,
   });
-
-  factory TeacherRegistrationRequest.fromJson(Map<String, dynamic> json) =>
+  
+  factory TeacherRegistrationRequest.fromJson(Map<String, dynamic> json) => 
       _$TeacherRegistrationRequestFromJson(json);
-
   Map<String, dynamic> toJson() => _$TeacherRegistrationRequestToJson(this);
-
-  @override
-  List<Object?> get props => [
-        name,
-        email,
-        password,
-        phoneNumber,
-        tscNumber,
-        schoolId,
-        subjectsTaught,
-        classesAssigned,
-        qualification,
-        yearsOfExperience,
-        specialization,
-      ];
-}
-
-@JsonSerializable()
-class TeacherProfile extends Equatable {
-  final UserModel user;
-  final String tscNumber;
-  final String schoolId;
-  final List<String> subjectsTaught;
-  final List<String> classesAssigned;
-  final String qualification;
-  final int yearsOfExperience;
-  final String? specialization;
-  final double rating;
-  final int studentsCount;
-  final bool isClassTeacher;
-  final String? classTeacherFor;
-
-  const TeacherProfile({
-    required this.user,
-    required this.tscNumber,
-    required this.schoolId,
-    required this.subjectsTaught,
-    required this.classesAssigned,
-    required this.qualification,
-    required this.yearsOfExperience,
-    this.specialization,
-    this.rating = 0.0,
-    this.studentsCount = 0,
-    this.isClassTeacher = false,
-    this.classTeacherFor,
-  });
-
-  factory TeacherProfile.fromJson(Map<String, dynamic> json) =>
-      _$TeacherProfileFromJson(json);
-
-  Map<String, dynamic> toJson() => _$TeacherProfileToJson(this);
-
-  @override
-  List<Object?> get props => [
-        user,
-        tscNumber,
-        schoolId,
-        subjectsTaught,
-        classesAssigned,
-        qualification,
-        yearsOfExperience,
-        specialization,
-        rating,
-        studentsCount,
-        isClassTeacher,
-        classTeacherFor,
-      ];
 }
