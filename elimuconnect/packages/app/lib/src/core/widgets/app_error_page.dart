@@ -1,4 +1,5 @@
-// File: packages/app/lib/src/core/widgets/app_error_page.dart
+import 'package:flutter/material.dart';
+
 class AppErrorPage extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
@@ -25,16 +26,8 @@ class AppErrorPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Oops! Something went wrong',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'We encountered an issue while starting ElimuConnect. Please try again.',
-                style: Theme.of(context).textTheme.bodyLarge,
+                'Something went wrong',
+                style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
@@ -42,24 +35,6 @@ class AppErrorPage extends StatelessWidget {
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
                 label: const Text('Try Again'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  // In a real app, this could open a support page or send feedback
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Support contact: support@elimuconnect.ke'),
-                    ),
-                  );
-                },
-                child: const Text('Contact Support'),
               ),
             ],
           ),

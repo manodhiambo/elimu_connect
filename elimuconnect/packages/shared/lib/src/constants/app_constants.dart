@@ -1,4 +1,3 @@
-// File: packages/shared/lib/src/constants/app_constants.dart
 class AppConstants {
   static const String appName = 'ElimuConnect';
   static const String appVersion = '1.0.0';
@@ -23,4 +22,3 @@ class AppConstants {
   static const List<String> allowedImageTypes = ['jpg', 'jpeg', 'png', 'gif'];
   static const List<String> allowedDocumentTypes = ['pdf', 'doc', 'docx', 'txt'];
 }
-

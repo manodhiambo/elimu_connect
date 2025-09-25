@@ -1,4 +1,5 @@
-// File: packages/shared/lib/src/validators/auth_validators.dart
+import '../constants/app_constants.dart';
+
 class AuthValidators {
   static String? validateEmail(String? email) {
     if (email == null || email.isEmpty) {

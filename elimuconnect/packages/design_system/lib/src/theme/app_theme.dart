@@ -1,70 +1,51 @@
 import 'package:flutter/material.dart';
-import 'color_scheme.dart';
-import 'text_theme.dart';
 
 class ElimuTheme {
   static ThemeData get lightTheme {
     return ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       useMaterial3: true,
-      colorScheme: ElimuColorScheme.light,
-      textTheme: ElimuTextTheme.textTheme,
       fontFamily: 'Inter',
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey.shade100,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: ElimuColors.border),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: ElimuColors.border),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: ElimuColors.primary, width: 2),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
-      cardTheme: CardTheme(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        margin: const EdgeInsets.all(8),
-      ),
-      appBarTheme: AppBarTheme(
-        elevation: 0,
-        centerTitle: true,
-        backgroundColor: ElimuColors.surface,
-        foregroundColor: ElimuColors.onSurface,
-        titleTextStyle: ElimuTextTheme.textTheme.headlineSmall?.copyWith(
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 1,
+        titleTextStyle: TextStyle(
+          color: Colors.black87,
+          fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: ElimuColors.onSurface,
         ),
       ),
+      scaffoldBackgroundColor: Colors.grey.shade50,
+      cardColor: Colors.white,
     );
   }
 
   static ThemeData get darkTheme {
-    return lightTheme.copyWith(
-      colorScheme: ElimuColorScheme.dark,
-      scaffoldBackgroundColor: ElimuColors.darkBackground,
-      cardColor: ElimuColors.darkSurface,
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+      fontFamily: 'Inter',
     );
   }
 }

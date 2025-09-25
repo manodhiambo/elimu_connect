@@ -1,233 +1,77 @@
 class KenyaCurriculum {
-  static const Map<String, List<String>> cbcSubjects = {
-    'pp1': [
+  static const Map<String, List<String>> subjectsByLevel = {
+    'Pre-Primary': [
       'Language Activities',
-      'Mathematical Activities',
+      'Mathematical Activities', 
       'Environmental Activities',
       'Psychomotor and Creative Activities',
+      'Religious Education'
     ],
-    'pp2': [
-      'Language Activities',
-      'Mathematical Activities',
-      'Environmental Activities',
-      'Psychomotor and Creative Activities',
-    ],
-    'grade_1': [
-      'English Language',
-      'Kiswahili Language',
-      'Indigenous Language',
-      'Mathematical Activities',
-      'Environmental Activities',
-      'Hygiene and Nutrition Activities',
-      'Religious Education',
-      'Movement and Creative Activities',
-    ],
-    'grade_2': [
-      'English Language',
-      'Kiswahili Language',
-      'Indigenous Language',
-      'Mathematical Activities',
-      'Environmental Activities',
-      'Hygiene and Nutrition Activities',
-      'Religious Education',
-      'Movement and Creative Activities',
-    ],
-    'grade_3': [
-      'English Language',
-      'Kiswahili Language',
-      'Indigenous Language',
-      'Mathematical Activities',
-      'Environmental Activities',
-      'Hygiene and Nutrition Activities',
-      'Religious Education',
-      'Movement and Creative Activities',
-    ],
-    'grade_4': [
+    'Lower Primary (Grade 1-3)': [
       'English',
       'Kiswahili',
+      'Mathematics',
+      'Environmental Studies',
+      'Religious Education',
+      'Physical Education'
+    ],
+    'Upper Primary (Grade 4-6)': [
+      'English',
+      'Kiswahili', 
       'Mathematics',
       'Science and Technology',
       'Social Studies',
       'Religious Education',
       'Creative Arts',
-      'Physical and Health Education',
+      'Physical Education'
     ],
-    'grade_5': [
-      'English',
-      'Kiswahili',
-      'Mathematics',
-      'Science and Technology',
-      'Social Studies',
-      'Religious Education',
-      'Creative Arts',
-      'Physical and Health Education',
-    ],
-    'grade_6': [
-      'English',
-      'Kiswahili',
-      'Mathematics',
-      'Science and Technology',
-      'Social Studies',
-      'Religious Education',
-      'Creative Arts',
-      'Physical and Health Education',
-    ],
-    'grade_7': [
+    'Junior Secondary (Grade 7-9)': [
       'English',
       'Kiswahili',
       'Mathematics',
       'Integrated Science',
-      'Health Education',
-      'Pre-Technical Studies',
-      'Social Studies',
+      'History and Government',
+      'Geography',
       'Religious Education',
-      'Creative Arts and Sports',
+      'Life Skills Education',
+      'Physical Education',
+      'Creative Arts'
     ],
-    'grade_8': [
-      'English',
-      'Kiswahili',
-      'Mathematics',
-      'Integrated Science',
-      'Health Education',
-      'Pre-Technical Studies',
-      'Social Studies',
-      'Religious Education',
-      'Creative Arts and Sports',
-    ],
-    'grade_9': [
-      'English',
-      'Kiswahili',
-      'Mathematics',
-      'Integrated Science',
-      'Health Education',
-      'Pre-Technical Studies',
-      'Social Studies',
-      'Religious Education',
-      'Creative Arts and Sports',
-    ],
-    'form_1': [
+    'Senior Secondary (Grade 10-12)': [
       'English',
       'Kiswahili',
       'Mathematics',
       'Biology',
       'Chemistry',
       'Physics',
-      'History and Government',
+      'History',
       'Geography',
-      'Christian Religious Education',
-      'Islamic Religious Education',
-      'Hindu Religious Education',
-      'Computer Studies',
+      'Religious Studies',
+      'Computer Science',
       'Business Studies',
-      'Agriculture',
-      'Home Science',
-      'Art and Design',
-      'Music',
-      'French',
-      'German',
-      'Arabic',
-    ],
-    'form_2': [
-      'English',
-      'Kiswahili',
-      'Mathematics',
-      'Biology',
-      'Chemistry',
-      'Physics',
-      'History and Government',
-      'Geography',
-      'Christian Religious Education',
-      'Islamic Religious Education',
-      'Hindu Religious Education',
-      'Computer Studies',
-      'Business Studies',
-      'Agriculture',
-      'Home Science',
-      'Art and Design',
-      'Music',
-      'French',
-      'German',
-      'Arabic',
-    ],
-    'form_3': [
-      'English',
-      'Kiswahili',
-      'Mathematics',
-      'Biology',
-      'Chemistry',
-      'Physics',
-      'History and Government',
-      'Geography',
-      'Christian Religious Education',
-      'Islamic Religious Education',
-      'Hindu Religious Education',
-      'Computer Studies',
-      'Business Studies',
-      'Agriculture',
-      'Home Science',
-      'Art and Design',
-      'Music',
-      'French',
-      'German',
-      'Arabic',
-    ],
-    'form_4': [
-      'English',
-      'Kiswahili',
-      'Mathematics',
-      'Biology',
-      'Chemistry',
-      'Physics',
-      'History and Government',
-      'Geography',
-      'Christian Religious Education',
-      'Islamic Religious Education',
-      'Hindu Religious Education',
-      'Computer Studies',
-      'Business Studies',
-      'Agriculture',
-      'Home Science',
-      'Art and Design',
-      'Music',
-      'French',
-      'German',
-      'Arabic',
-    ],
+      'Agriculture'
+    ]
   };
-
-  static const Map<String, String> subjectCodes = {
-    'English': '101',
-    'Kiswahili': '102',
-    'Mathematics': '121',
-    'Biology': '231',
-    'Chemistry': '233',
-    'Physics': '232',
-    'History and Government': '311',
-    'Geography': '312',
-    'Christian Religious Education': '313',
-    'Islamic Religious Education': '314',
-    'Hindu Religious Education': '315',
-    'Computer Studies': '451',
-    'Business Studies': '565',
-    'Agriculture': '443',
-    'Home Science': '442',
-    'Art and Design': '444',
-    'Music': '445',
-    'French': '503',
-    'German': '504',
-    'Arabic': '505',
-  };
-
+  
+  static const List<String> gradeNames = [
+    'Pre-Primary 1', 'Pre-Primary 2',
+    'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6',
+    'Grade 7', 'Grade 8', 'Grade 9',
+    'Grade 10', 'Grade 11', 'Grade 12'
+  ];
+  
   static List<String> getSubjectsForGrade(String grade) {
-    return cbcSubjects[grade] ?? [];
-  }
-
-  static String? getSubjectCode(String subject) {
-    return subjectCodes[subject];
-  }
-
-  static bool isValidSubjectForGrade(String subject, String grade) {
-    final subjects = getSubjectsForGrade(grade);
-    return subjects.contains(subject);
+    if (grade.contains('Pre-Primary')) {
+      return subjectsByLevel['Pre-Primary']!;
+    } else if (['Grade 1', 'Grade 2', 'Grade 3'].contains(grade)) {
+      return subjectsByLevel['Lower Primary (Grade 1-3)']!;
+    } else if (['Grade 4', 'Grade 5', 'Grade 6'].contains(grade)) {
+      return subjectsByLevel['Upper Primary (Grade 4-6)']!;
+    } else if (['Grade 7', 'Grade 8', 'Grade 9'].contains(grade)) {
+      return subjectsByLevel['Junior Secondary (Grade 7-9)']!;
+    } else if (['Grade 10', 'Grade 11', 'Grade 12'].contains(grade)) {
+      return subjectsByLevel['Senior Secondary (Grade 10-12)']!;
+    }
+    return [];
   }
 }

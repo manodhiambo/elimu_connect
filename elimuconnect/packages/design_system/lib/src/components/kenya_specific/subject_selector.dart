@@ -1,8 +1,7 @@
-// File: packages/design_system/lib/src/components/kenya_specific/subject_selector.dart
 import 'package:flutter/material.dart';
 import 'package:elimuconnect_shared/shared.dart';
 
-class SubjectSelector extends StatefulWidget {
+class SubjectSelector extends StatelessWidget {
   final List<String> selectedSubjects;
   final ValueChanged<List<String>> onChanged;
   final String? selectedClass;
@@ -15,14 +14,9 @@ class SubjectSelector extends StatefulWidget {
   });
 
   @override
-  State<SubjectSelector> createState() => _SubjectSelectorState();
-}
-
-class _SubjectSelectorState extends State<SubjectSelector> {
-  @override
   Widget build(BuildContext context) {
-    final availableSubjects = widget.selectedClass != null
-        ? KenyaCurriculum.getSubjectsForGrade(widget.selectedClass!)
+    final availableSubjects = selectedClass != null
+        ? KenyaCurriculum.getSubjectsForGrade(selectedClass!)
         : <String>[];
 
     if (availableSubjects.isEmpty) {
@@ -46,18 +40,18 @@ class _SubjectSelectorState extends State<SubjectSelector> {
           spacing: 8,
           runSpacing: 8,
           children: availableSubjects.map((subject) {
-            final isSelected = widget.selectedSubjects.contains(subject);
+            final isSelected = selectedSubjects.contains(subject);
             return FilterChip(
               label: Text(subject),
               selected: isSelected,
               onSelected: (selected) {
-                final updatedSubjects = List<String>.from(widget.selectedSubjects);
+                final updatedSubjects = List<String>.from(selectedSubjects);
                 if (selected) {
                   updatedSubjects.add(subject);
                 } else {
                   updatedSubjects.remove(subject);
                 }
-                widget.onChanged(updatedSubjects);
+                onChanged(updatedSubjects);
               },
             );
           }).toList(),

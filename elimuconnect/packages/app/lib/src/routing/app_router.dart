@@ -1,7 +1,7 @@
-// File: packages/app/lib/src/routing/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:elimuconnect_shared/shared.dart';
 import '../core/providers/app_providers.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/registration_page.dart';
@@ -18,8 +18,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: RouteNames.home,
     redirect: (context, state) {
       final isLoggedIn = authState.status == AuthStatus.authenticated;
-      final isLoggingIn = state.location == RouteNames.login || 
-                         state.location == RouteNames.register;
+      final isLoggingIn = state.fullPath == RouteNames.login || 
+                         state.fullPath == RouteNames.register;
       
       if (!isLoggedIn && !isLoggingIn) {
         return RouteNames.login;
@@ -74,7 +74,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-Widget _getDashboardForUser(User? user) {
+Widget _getDashboardForUser(user) {
   if (user == null) return const LoginPage();
   
   switch (user.role) {
@@ -89,7 +89,7 @@ Widget _getDashboardForUser(User? user) {
   }
 }
 
-String _getHomeRouteForUser(User? user) {
+String _getHomeRouteForUser(user) {
   if (user == null) return RouteNames.login;
   
   switch (user.role) {

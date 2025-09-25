@@ -1,7 +1,7 @@
-// File: packages/app/lib/src/features/auth/presentation/pages/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:elimuconnect_design_system/design_system.dart';
+import 'package:elimuconnect_shared/shared.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../routing/route_names.dart';
@@ -40,7 +40,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Logo and title
               Icon(
                 Icons.school,
                 size: 80,
@@ -54,7 +53,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               const SizedBox(height: 48),
               
-              // Email field
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -66,7 +64,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               const SizedBox(height: 16),
               
-              // Password field
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(
@@ -82,7 +79,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               const SizedBox(height: 24),
               
-              // Login button
               PrimaryButton(
                 text: 'Login',
                 isLoading: authState.status == AuthStatus.loading,
@@ -90,7 +86,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 width: double.infinity,
               ),
               
-              // Error message
               if (authState.errorMessage != null) ...[
                 const SizedBox(height: 16),
                 Container(
@@ -108,7 +103,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               
               const SizedBox(height: 24),
               
-              // Register link
               TextButton(
                 onPressed: () => context.go(RouteNames.register),
                 child: const Text("Don't have an account? Register here"),

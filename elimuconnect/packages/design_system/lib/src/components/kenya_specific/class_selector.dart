@@ -1,4 +1,3 @@
-// File: packages/design_system/lib/src/components/kenya_specific/class_selector.dart
 import 'package:flutter/material.dart';
 import 'package:elimuconnect_shared/shared.dart';
 
@@ -27,7 +26,10 @@ class ClassSelector extends StatelessWidget {
         );
       }).toList(),
       onChanged: onChanged,
-      validator: (value) => KenyaSpecificValidators.validateClassName(value),
+      validator: (value) {
+        if (value == null) return 'Please select a class';
+        return null;
+      },
     );
   }
 }

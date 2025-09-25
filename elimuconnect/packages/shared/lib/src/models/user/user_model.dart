@@ -5,73 +5,59 @@ import '../common/enums.dart';
 part 'user_model.g.dart';
 
 @JsonSerializable()
-class UserModel extends Equatable {
+class User extends Equatable {
   final String id;
   final String name;
   final String email;
+  final String? phoneNumber;
   final UserRole role;
-  final bool isActive;
-  final bool isVerified;
+  final UserStatus status;
+  final String? profileImageUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String? profilePictureUrl;
-  final String? phoneNumber;
-
-  const UserModel({
+  
+  const User({
     required this.id,
     required this.name,
     required this.email,
+    this.phoneNumber,
     required this.role,
-    this.isActive = true,
-    this.isVerified = false,
+    required this.status,
+    this.profileImageUrl,
     required this.createdAt,
     required this.updatedAt,
-    this.profilePictureUrl,
-    this.phoneNumber,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) =>
-      _$UserModelFromJson(json);
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  Map<String, dynamic> toJson() => _$UserToJson(this);
 
-  Map<String, dynamic> toJson() => _$UserModelToJson(this);
-
-  UserModel copyWith({
+  User copyWith({
     String? id,
     String? name,
     String? email,
+    String? phoneNumber,
     UserRole? role,
-    bool? isActive,
-    bool? isVerified,
+    UserStatus? status,
+    String? profileImageUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? profilePictureUrl,
-    String? phoneNumber,
   }) {
-    return UserModel(
+    return User(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       role: role ?? this.role,
-      isActive: isActive ?? this.isActive,
-      isVerified: isVerified ?? this.isVerified,
+      status: status ?? this.status,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
     );
   }
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        email,
-        role,
-        isActive,
-        isVerified,
-        createdAt,
-        updatedAt,
-        profilePictureUrl,
-        phoneNumber,
-      ];
+    id, name, email, phoneNumber, role, status, 
+    profileImageUrl, createdAt, updatedAt
+  ];
 }
