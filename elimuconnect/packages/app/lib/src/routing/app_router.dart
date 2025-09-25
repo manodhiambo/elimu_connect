@@ -74,7 +74,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-Widget _getDashboardForUser(user) {
+Widget _getDashboardForUser(dynamic user) {
   if (user == null) return const LoginPage();
   
   switch (user.role) {
@@ -87,9 +87,12 @@ Widget _getDashboardForUser(user) {
     case UserRole.admin:
       return const AdminDashboardPage();
   }
+  
+  // Default fallback
+  return const LoginPage();
 }
 
-String _getHomeRouteForUser(user) {
+String _getHomeRouteForUser(dynamic user) {
   if (user == null) return RouteNames.login;
   
   switch (user.role) {
@@ -102,4 +105,7 @@ String _getHomeRouteForUser(user) {
     case UserRole.admin:
       return RouteNames.adminDashboard;
   }
+  
+  // Default fallback
+  return RouteNames.login;
 }
