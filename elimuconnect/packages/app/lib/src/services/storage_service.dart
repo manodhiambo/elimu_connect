@@ -1,18 +1,25 @@
 // File: packages/app/lib/src/services/storage_service.dart
 
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
   static SharedPreferences? _prefs;
-  static const _secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
+
+  static final FlutterSecureStorage _secureStorage = FlutterSecureStorage(
+    aOptions: const AndroidOptions(
       encryptedSharedPreferences: true,
     ),
-    iOptions: IOSOptions(
-      accessibility: IOSAccessibility.first_unlock_this_device,
-    ),
+    // iOS options must be skipped for web
+    iOptions: kIsWeb
+        ? null
+        : const IOSOptions(
+            accessibility: IOSAccessibility.first_unlock_this_device,
+          ),
   );
 
   // Initialize storage
@@ -23,14 +30,15 @@ class StorageService {
   // Get SharedPreferences instance
   SharedPreferences get _preferences {
     if (_prefs == null) {
-      throw StateError('StorageService not initialized. Call StorageService.initialize() first.');
+      throw StateError(
+        'StorageService not initialized. Call StorageService.initialize() first.',
+      );
     }
     return _prefs!;
   }
 
   // ===================== String Operations =====================
-  
-  /// Store a string value
+
   Future<bool> setString(String key, String value) async {
     try {
       return await _preferences.setString(key, value);
@@ -40,7 +48,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve a string value
   Future<String?> getString(String key) async {
     try {
       return _preferences.getString(key);
@@ -51,8 +58,7 @@ class StorageService {
   }
 
   // ===================== Secure String Operations =====================
-  
-  /// Store a string securely (for sensitive data like tokens)
+
   Future<bool> setSecureString(String key, String value) async {
     try {
       await _secureStorage.write(key: key, value: value);
@@ -63,7 +69,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve a secure string
   Future<String?> getSecureString(String key) async {
     try {
       return await _secureStorage.read(key: key);
@@ -74,8 +79,7 @@ class StorageService {
   }
 
   // ===================== Integer Operations =====================
-  
-  /// Store an integer value
+
   Future<bool> setInt(String key, int value) async {
     try {
       return await _preferences.setInt(key, value);
@@ -85,7 +89,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve an integer value
   Future<int?> getInt(String key) async {
     try {
       return _preferences.getInt(key);
@@ -96,8 +99,7 @@ class StorageService {
   }
 
   // ===================== Boolean Operations =====================
-  
-  /// Store a boolean value
+
   Future<bool> setBool(String key, bool value) async {
     try {
       return await _preferences.setBool(key, value);
@@ -107,7 +109,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve a boolean value
   Future<bool?> getBool(String key) async {
     try {
       return _preferences.getBool(key);
@@ -118,8 +119,7 @@ class StorageService {
   }
 
   // ===================== Double Operations =====================
-  
-  /// Store a double value
+
   Future<bool> setDouble(String key, double value) async {
     try {
       return await _preferences.setDouble(key, value);
@@ -129,7 +129,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve a double value
   Future<double?> getDouble(String key) async {
     try {
       return _preferences.getDouble(key);
@@ -140,8 +139,7 @@ class StorageService {
   }
 
   // ===================== List Operations =====================
-  
-  /// Store a list of strings
+
   Future<bool> setStringList(String key, List<String> value) async {
     try {
       return await _preferences.setStringList(key, value);
@@ -151,7 +149,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve a list of strings
   Future<List<String>?> getStringList(String key) async {
     try {
       return _preferences.getStringList(key);
@@ -162,8 +159,7 @@ class StorageService {
   }
 
   // ===================== JSON Operations =====================
-  
-  /// Store a JSON object (Map or List)
+
   Future<bool> setJson(String key, dynamic value) async {
     try {
       final jsonString = jsonEncode(value);
@@ -174,7 +170,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve a JSON object
   Future<dynamic> getJson(String key) async {
     try {
       final jsonString = await getString(key);
@@ -186,7 +181,6 @@ class StorageService {
     }
   }
 
-  /// Store a secure JSON object
   Future<bool> setSecureJson(String key, dynamic value) async {
     try {
       final jsonString = jsonEncode(value);
@@ -197,7 +191,6 @@ class StorageService {
     }
   }
 
-  /// Retrieve a secure JSON object
   Future<dynamic> getSecureJson(String key) async {
     try {
       final jsonString = await getSecureString(key);
@@ -210,8 +203,7 @@ class StorageService {
   }
 
   // ===================== Removal Operations =====================
-  
-  /// Remove a key from normal storage
+
   Future<bool> remove(String key) async {
     try {
       return await _preferences.remove(key);
@@ -221,7 +213,6 @@ class StorageService {
     }
   }
 
-  /// Remove a key from secure storage
   Future<bool> removeSecure(String key) async {
     try {
       await _secureStorage.delete(key: key);
@@ -232,7 +223,6 @@ class StorageService {
     }
   }
 
-  /// Check if a key exists in normal storage
   Future<bool> containsKey(String key) async {
     try {
       return _preferences.containsKey(key);
@@ -242,7 +232,6 @@ class StorageService {
     }
   }
 
-  /// Check if a key exists in secure storage
   Future<bool> containsSecureKey(String key) async {
     try {
       final value = await _secureStorage.read(key: key);
@@ -254,8 +243,7 @@ class StorageService {
   }
 
   // ===================== Clear Operations =====================
-  
-  /// Clear all normal storage
+
   Future<bool> clear() async {
     try {
       return await _preferences.clear();
@@ -265,7 +253,6 @@ class StorageService {
     }
   }
 
-  /// Clear all secure storage
   Future<bool> clearSecure() async {
     try {
       await _secureStorage.deleteAll();
@@ -276,7 +263,6 @@ class StorageService {
     }
   }
 
-  /// Clear all storage (both normal and secure)
   Future<bool> clearAll() async {
     try {
       final normalClear = await clear();
@@ -289,8 +275,7 @@ class StorageService {
   }
 
   // ===================== Utility Methods =====================
-  
-  /// Get all keys from normal storage
+
   Set<String> getAllKeys() {
     try {
       return _preferences.getKeys();
@@ -300,19 +285,18 @@ class StorageService {
     }
   }
 
-  /// Get storage size (approximate)
   Future<int> getStorageSize() async {
     try {
       int totalSize = 0;
       final keys = getAllKeys();
-      
+
       for (String key in keys) {
         final value = await getString(key);
         if (value != null) {
           totalSize += value.length;
         }
       }
-      
+
       return totalSize;
     } catch (e) {
       print('Error calculating storage size: $e');
@@ -320,12 +304,11 @@ class StorageService {
     }
   }
 
-  /// Get storage info (key count, approximate size)
   Future<Map<String, dynamic>> getStorageInfo() async {
     try {
       final keys = getAllKeys();
       final size = await getStorageSize();
-      
+
       return {
         'keyCount': keys.length,
         'approximateSize': size,
@@ -342,15 +325,14 @@ class StorageService {
   }
 
   // ===================== Batch Operations =====================
-  
-  /// Store multiple key-value pairs at once
+
   Future<bool> setBatch(Map<String, dynamic> data) async {
     try {
       bool allSuccess = true;
-      
+
       for (MapEntry<String, dynamic> entry in data.entries) {
         bool success = false;
-        
+
         if (entry.value is String) {
           success = await setString(entry.key, entry.value);
         } else if (entry.value is int) {
@@ -364,10 +346,10 @@ class StorageService {
         } else {
           success = await setJson(entry.key, entry.value);
         }
-        
+
         if (!success) allSuccess = false;
       }
-      
+
       return allSuccess;
     } catch (e) {
       print('Error setting batch data: $e');
@@ -375,44 +357,41 @@ class StorageService {
     }
   }
 
-  /// Get multiple values at once
   Future<Map<String, dynamic>> getBatch(List<String> keys) async {
     final results = <String, dynamic>{};
-    
+
     for (String key in keys) {
       try {
-        // Try different data types
         final stringValue = await getString(key);
         if (stringValue != null) {
           results[key] = stringValue;
           continue;
         }
-        
+
         final intValue = await getInt(key);
         if (intValue != null) {
           results[key] = intValue;
           continue;
         }
-        
+
         final boolValue = await getBool(key);
         if (boolValue != null) {
           results[key] = boolValue;
           continue;
         }
-        
+
         final doubleValue = await getDouble(key);
         if (doubleValue != null) {
           results[key] = doubleValue;
           continue;
         }
-        
+
         final listValue = await getStringList(key);
         if (listValue != null) {
           results[key] = listValue;
           continue;
         }
-        
-        // If none of the above, it might be JSON
+
         final jsonValue = await getJson(key);
         if (jsonValue != null) {
           results[key] = jsonValue;
@@ -421,19 +400,18 @@ class StorageService {
         print('Error getting value for key $key: $e');
       }
     }
-    
+
     return results;
   }
 
-  /// Remove multiple keys at once
   Future<bool> removeBatch(List<String> keys) async {
     bool allSuccess = true;
-    
+
     for (String key in keys) {
       final success = await remove(key);
       if (!success) allSuccess = false;
     }
-    
+
     return allSuccess;
   }
 }
@@ -448,17 +426,19 @@ class StorageServiceImpl extends StorageService {
 
   StorageServiceImpl(
     this._prefs, {
-    this._cacheExpiry = const Duration(minutes: 30),
-  }) : _secureStorage = const FlutterSecureStorage(
-          aOptions: AndroidOptions(
+    Duration cacheExpiry = const Duration(minutes: 30),
+  })  : _cacheExpiry = cacheExpiry,
+        _secureStorage = FlutterSecureStorage(
+          aOptions: const AndroidOptions(
             encryptedSharedPreferences: true,
           ),
-          iOptions: IOSOptions(
-            accessibility: IOSAccessibility.first_unlock_this_device,
-          ),
+          iOptions: kIsWeb
+              ? null
+              : const IOSOptions(
+                  accessibility: IOSAccessibility.first_unlock_this_device,
+                ),
         );
 
-  // Cache management
   void _initializeCache() {
     _cache = <String, dynamic>{};
     _startCacheTimer();
@@ -481,26 +461,24 @@ class StorageServiceImpl extends StorageService {
 
   T? _getFromCache<T>(String key) {
     if (_cache == null) return null;
-    
+
     final cached = _cache![key];
     if (cached == null) return null;
-    
+
     final timestamp = cached['timestamp'] as DateTime;
     if (DateTime.now().difference(timestamp) > _cacheExpiry) {
       _cache!.remove(key);
       return null;
     }
-    
+
     return cached['value'] as T?;
   }
 
-  // Enhanced methods with caching
   @override
   Future<String?> getString(String key) async {
-    // Check cache first
     final cached = _getFromCache<String>(key);
     if (cached != null) return cached;
-    
+
     final value = await super.getString(key);
     if (value != null) {
       _addToCache(key, value);
@@ -511,7 +489,6 @@ class StorageServiceImpl extends StorageService {
   // Encrypted storage methods
   Future<bool> setEncryptedString(String key, String value) async {
     try {
-      // Simple encryption using built-in secure storage
       await _secureStorage.write(key: key, value: value);
       return true;
     } catch (e) {
@@ -529,14 +506,12 @@ class StorageServiceImpl extends StorageService {
     }
   }
 
-  // Data compression for large objects
+  // Compressed JSON storage
   Future<bool> setCompressedJson(String key, dynamic value) async {
     try {
       final jsonString = jsonEncode(value);
-      
-      // Simple compression simulation - in production, use dart:io compression
+
       if (jsonString.length > 1000) {
-        // Store large data in secure storage
         return await setSecureString(key, jsonString);
       } else {
         return await setJson(key, value);
@@ -549,13 +524,10 @@ class StorageServiceImpl extends StorageService {
 
   Future<dynamic> getCompressedJson(String key) async {
     try {
-      // Try secure storage first (for compressed data)
       final secureValue = await getSecureString(key);
       if (secureValue != null) {
         return jsonDecode(secureValue);
       }
-      
-      // Fall back to normal JSON storage
       return await getJson(key);
     } catch (e) {
       print('Error retrieving compressed JSON: $e');
@@ -563,13 +535,12 @@ class StorageServiceImpl extends StorageService {
     }
   }
 
-  // Data migration helper
   Future<bool> migrateData(Map<String, String> keyMigrations) async {
     try {
       for (final entry in keyMigrations.entries) {
         final oldKey = entry.key;
         final newKey = entry.value;
-        
+
         if (await containsKey(oldKey)) {
           final value = await getString(oldKey);
           if (value != null) {
@@ -585,22 +556,21 @@ class StorageServiceImpl extends StorageService {
     }
   }
 
-  // Data backup and restore
   Future<Map<String, dynamic>?> backupData() async {
     try {
       final keys = getAllKeys();
       final backup = <String, dynamic>{};
-      
+
       for (final key in keys) {
         final value = await getString(key);
         if (value != null) {
           backup[key] = value;
         }
       }
-      
+
       backup['_backup_timestamp'] = DateTime.now().toIso8601String();
       backup['_backup_version'] = '1.0';
-      
+
       return backup;
     } catch (e) {
       print('Error creating backup: $e');
@@ -610,22 +580,19 @@ class StorageServiceImpl extends StorageService {
 
   Future<bool> restoreData(Map<String, dynamic> backup) async {
     try {
-      // Validate backup
       if (!backup.containsKey('_backup_timestamp')) {
         print('Invalid backup format');
         return false;
       }
-      
-      // Clear existing data (optional - might want to merge instead)
+
       await clear();
-      
-      // Restore data
+
       for (final entry in backup.entries) {
         if (!entry.key.startsWith('_backup_')) {
           await setString(entry.key, entry.value.toString());
         }
       }
-      
+
       return true;
     } catch (e) {
       print('Error restoring backup: $e');
@@ -633,17 +600,15 @@ class StorageServiceImpl extends StorageService {
     }
   }
 
-  // Cleanup methods
   Future<void> cleanup() async {
     _cacheTimer?.cancel();
     _cache?.clear();
   }
 
-  // Data validation
   Future<Map<String, bool>> validateData() async {
     final results = <String, bool>{};
     final keys = getAllKeys();
-    
+
     for (final key in keys) {
       try {
         final value = await getString(key);
@@ -652,29 +617,27 @@ class StorageServiceImpl extends StorageService {
         results[key] = false;
       }
     }
-    
+
     return results;
   }
 
-  // Performance monitoring
   Future<Map<String, dynamic>> getPerformanceStats() async {
     final stopwatch = Stopwatch()..start();
-    
-    // Test read performance
+
     const testKey = '_perf_test_key';
     const testValue = 'test_value_for_performance_testing';
-    
+
     await setString(testKey, testValue);
-    final readValue = await getString(testKey);
+    await getString(testKey);
     await remove(testKey);
-    
+
     stopwatch.stop();
-    
+
     final stats = await getStorageInfo();
     stats['read_write_test_ms'] = stopwatch.elapsedMilliseconds;
     stats['cache_size'] = _cache?.length ?? 0;
     stats['cache_enabled'] = _cache != null;
-    
+
     return stats;
   }
 }

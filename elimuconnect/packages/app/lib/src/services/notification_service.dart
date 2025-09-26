@@ -1,11 +1,11 @@
 // File: packages/app/lib/src/services/notification_service.dart
 
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import '../config/app_config.dart';
 import '../config/environment.dart';
@@ -20,10 +20,16 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
 
+    if (kIsWeb) {
+      // Notifications not supported on web by this plugin
+      _initialized = true;
+      return;
+    }
+
     try {
-      // Initialize platform-specific settings
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-      
+      const androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+
       const iosSettings = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -44,17 +50,15 @@ class NotificationService {
         macOS: macosSettings,
       );
 
-      // Initialize with callback for notification taps
       await _notificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: _onNotificationTap,
-        onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTap,
+        onDidReceiveBackgroundNotificationResponse:
+            _onBackgroundNotificationTap,
       );
 
-      // Request permissions
       await _requestPermissions();
 
-      // Create notification channels for Android
       if (Environment.isAndroid) {
         await _createNotificationChannels();
       }
@@ -71,25 +75,23 @@ class NotificationService {
     }
   }
 
-  /// Check if service is initialized
   bool isInitialized() => _initialized;
 
-  /// Request notification permissions
   Future<bool> _requestPermissions() async {
     if (Environment.isAndroid) {
       final androidVersion = await _getAndroidVersion();
       if (androidVersion >= 33) {
-        // Android 13+ requires explicit permission request
         final status = await Permission.notification.request();
         return status.isGranted;
       }
-      return true; // Earlier Android versions don't require explicit permission
+      return true;
     }
 
     if (Environment.isIOS || Environment.isMacOS) {
       final iosPlugin = _notificationsPlugin
-          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
-      
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+
       if (iosPlugin != null) {
         final granted = await iosPlugin.requestPermissions(
           alert: true,
@@ -103,19 +105,15 @@ class NotificationService {
     return true;
   }
 
-  /// Get Android version (simplified)
   Future<int> _getAndroidVersion() async {
     if (!Environment.isAndroid) return 0;
-    
     try {
-      // This is a simplified version - in production you'd use device_info_plus
-      return 33; // Assume Android 13+ for now
-    } catch (e) {
+      return 33; // stubbed
+    } catch (_) {
       return 33;
     }
   }
 
-  /// Create notification channels for Android
   Future<void> _createNotificationChannels() async {
     const channels = [
       AndroidNotificationChannel(
@@ -162,16 +160,12 @@ class NotificationService {
 
     for (final channel in channels) {
       await _notificationsPlugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(channel);
-    }
-
-    if (AppConfig.isDebugMode) {
-      print('📱 Created ${channels.length} notification channels');
     }
   }
 
-  /// Show a simple notification
   Future<void> showNotification({
     required int id,
     required String title,
@@ -182,9 +176,7 @@ class NotificationService {
     bool enableVibration = true,
     bool playSound = true,
   }) async {
-    if (!_initialized) {
-      await initialize();
-    }
+    if (!_initialized) await initialize();
 
     try {
       final androidDetails = AndroidNotificationDetails(
@@ -196,7 +188,7 @@ class NotificationService {
         enableVibration: enableVibration,
         playSound: playSound,
         icon: '@mipmap/ic_launcher',
-        color: const Color(0xFF1E88E5), // Primary color
+        color: const Color(0xFF1E88E5),
       );
 
       const iosDetails = DarwinNotificationDetails(
@@ -205,7 +197,7 @@ class NotificationService {
         presentSound: true,
       );
 
-      final notificationDetails = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
         macOS: iosDetails,
@@ -215,13 +207,9 @@ class NotificationService {
         id,
         title,
         body,
-        notificationDetails,
+        details,
         payload: payload,
       );
-
-      if (AppConfig.isDebugMode) {
-        print('📬 Notification shown: $title');
-      }
     } catch (e) {
       if (AppConfig.isDebugMode) {
         print('❌ Failed to show notification: $e');
@@ -229,7 +217,6 @@ class NotificationService {
     }
   }
 
-  /// Show a scheduled notification
   Future<void> scheduleNotification({
     required int id,
     required String title,
@@ -239,9 +226,7 @@ class NotificationService {
     String channelId = 'reminders',
     NotificationPriority priority = NotificationPriority.defaultPriority,
   }) async {
-    if (!_initialized) {
-      await initialize();
-    }
+    if (!_initialized) await initialize();
 
     try {
       final androidDetails = AndroidNotificationDetails(
@@ -261,28 +246,23 @@ class NotificationService {
         presentSound: true,
       );
 
-      final notificationDetails = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
         macOS: iosDetails,
       );
 
-      // Use zonedSchedule instead of schedule for newer versions
       await _notificationsPlugin.zonedSchedule(
         id,
         title,
         body,
-        scheduledDate,
-        notificationDetails,
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        details,
         payload: payload,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-
-      if (AppConfig.isDebugMode) {
-        print('⏰ Notification scheduled for $scheduledDate: $title');
-      }
     } catch (e) {
       if (AppConfig.isDebugMode) {
         print('❌ Failed to schedule notification: $e');
@@ -290,7 +270,6 @@ class NotificationService {
     }
   }
 
-  /// Show notification with big text (Android) or expanded content
   Future<void> showBigTextNotification({
     required int id,
     required String title,
@@ -299,12 +278,10 @@ class NotificationService {
     String? payload,
     String channelId = 'general',
   }) async {
-    if (!_initialized) {
-      await initialize();
-    }
+    if (!_initialized) await initialize();
 
     try {
-        final androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         channelId,
         _getChannelName(channelId),
         channelDescription: _getChannelDescription(channelId),
@@ -329,27 +306,20 @@ class NotificationService {
         presentSound: true,
       );
 
-      final notificationDetails = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
         macOS: iosDetails,
       );
 
-      await _notificationsPlugin.show(
-        id,
-        title,
-        body,
-        notificationDetails,
-        payload: payload,
-      );
+      await _notificationsPlugin.show(id, title, body, details, payload: payload);
     } catch (e) {
       if (AppConfig.isDebugMode) {
-        print('❌ Failed to show big text notification: $e');
+        print('❌ Failed big text notification: $e');
       }
     }
   }
 
-  /// Show notification with action buttons
   Future<void> showNotificationWithActions({
     required int id,
     required String title,
@@ -358,9 +328,7 @@ class NotificationService {
     String? payload,
     String channelId = 'messages',
   }) async {
-    if (!_initialized) {
-      await initialize();
-    }
+    if (!_initialized) await initialize();
 
     try {
       final androidDetails = AndroidNotificationDetails(
@@ -369,12 +337,16 @@ class NotificationService {
         channelDescription: _getChannelDescription(channelId),
         importance: Importance.high,
         priority: Priority.high,
-        actions: actions.map((action) => AndroidNotificationAction(
-          action.id,
-          action.title,
-          titleColor: const Color(0xFF1E88E5),
-          icon: action.icon != null ? DrawableResourceAndroidBitmap(action.icon!) : null,
-        )).toList(),
+        actions: actions
+            .map((a) => AndroidNotificationAction(
+                  a.id,
+                  a.title,
+                  titleColor: const Color(0xFF1E88E5),
+                  icon: a.icon != null
+                      ? DrawableResourceAndroidBitmap(a.icon!)
+                      : null,
+                ))
+            .toList(),
         enableVibration: true,
         playSound: true,
         icon: '@mipmap/ic_launcher',
@@ -386,113 +358,66 @@ class NotificationService {
         presentSound: true,
       );
 
-      final notificationDetails = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
         macOS: iosDetails,
       );
 
-      await _notificationsPlugin.show(
-        id,
-        title,
-        body,
-        notificationDetails,
-        payload: payload,
-      );
+      await _notificationsPlugin.show(id, title, body, details, payload: payload);
     } catch (e) {
       if (AppConfig.isDebugMode) {
-        print('❌ Failed to show notification with actions: $e');
+        print('❌ Failed action notification: $e');
       }
     }
   }
 
-  /// Cancel a specific notification
-  Future<void> cancelNotification(int id) async {
-    try {
-      await _notificationsPlugin.cancel(id);
-      
-      if (AppConfig.isDebugMode) {
-        print('🚫 Cancelled notification: $id');
-      }
-    } catch (e) {
-      if (AppConfig.isDebugMode) {
-        print('❌ Failed to cancel notification: $e');
-      }
-    }
-  }
+  Future<void> cancelNotification(int id) async =>
+      _notificationsPlugin.cancel(id);
 
-  /// Cancel all notifications
-  Future<void> cancelAllNotifications() async {
-    try {
-      await _notificationsPlugin.cancelAll();
-      
-      if (AppConfig.isDebugMode) {
-        print('🚫 Cancelled all notifications');
-      }
-    } catch (e) {
-      if (AppConfig.isDebugMode) {
-        print('❌ Failed to cancel all notifications: $e');
-      }
-    }
-  }
+  Future<void> cancelAllNotifications() async =>
+      _notificationsPlugin.cancelAll();
 
-  /// Get pending notifications
-  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    try {
-      return await _notificationsPlugin.pendingNotificationRequests();
-    } catch (e) {
-      if (AppConfig.isDebugMode) {
-        print('❌ Failed to get pending notifications: $e');
-      }
-      return [];
-    }
-  }
+  Future<List<PendingNotificationRequest>> getPendingNotifications() async =>
+      _notificationsPlugin.pendingNotificationRequests();
 
-  /// Get active notifications (Android only)
   Future<List<ActiveNotification>> getActiveNotifications() async {
-    try {
-      if (Environment.isAndroid) {
-        final androidPlugin = _notificationsPlugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-        return await androidPlugin?.getActiveNotifications() ?? [];
-      }
-      return [];
-    } catch (e) {
-      if (AppConfig.isDebugMode) {
-        print('❌ Failed to get active notifications: $e');
-      }
-      return [];
+    if (Environment.isAndroid) {
+      final plugin = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      return await plugin?.getActiveNotifications() ?? [];
     }
+    return [];
   }
 
-  /// Check if notifications are enabled
   Future<bool> areNotificationsEnabled() async {
     try {
       if (Environment.isAndroid) {
-        final androidPlugin = _notificationsPlugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-        return await androidPlugin?.areNotificationsEnabled() ?? false;
+        final plugin = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+        return await plugin?.areNotificationsEnabled() ?? false;
       }
-      
+
       if (Environment.isIOS || Environment.isMacOS) {
-        final iosPlugin = _notificationsPlugin
-            .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
-        return await iosPlugin?.checkPermissions().then((permissions) =>
-            permissions?.alert == true || permissions?.badge == true) ?? false;
+        final plugin = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>();
+        final perms = await plugin?.checkPermissions();
+        return perms?.isAuthorized ?? false;
       }
-      
+
       return true;
-    } catch (e) {
+    } catch (_) {
       return false;
     }
   }
 
-  // Helper methods
+  // Helpers
 
-  String _getChannelName(String channelId) {
-    switch (channelId) {
-      case 'general':
-        return 'General Notifications';
+  String _getChannelName(String id) {
+    switch (id) {
       case 'messages':
         return 'Messages';
       case 'assignments':
@@ -506,10 +431,8 @@ class NotificationService {
     }
   }
 
-  String _getChannelDescription(String channelId) {
-    switch (channelId) {
-      case 'general':
-        return 'General app notifications';
+  String _getChannelDescription(String id) {
+    switch (id) {
       case 'messages':
         return 'New message notifications';
       case 'assignments':
@@ -523,147 +446,104 @@ class NotificationService {
     }
   }
 
-  Importance _mapPriorityToImportance(NotificationPriority priority) {
-    switch (priority) {
+  Importance _mapPriorityToImportance(NotificationPriority p) {
+    switch (p) {
       case NotificationPriority.low:
         return Importance.low;
-      case NotificationPriority.defaultPriority:
-        return Importance.defaultImportance;
       case NotificationPriority.high:
         return Importance.high;
       case NotificationPriority.max:
         return Importance.max;
+      default:
+        return Importance.defaultImportance;
     }
   }
 
-  Priority _mapToAndroidPriority(NotificationPriority priority) {
-    switch (priority) {
+  Priority _mapToAndroidPriority(NotificationPriority p) {
+    switch (p) {
       case NotificationPriority.low:
         return Priority.low;
-      case NotificationPriority.defaultPriority:
-        return Priority.defaultPriority;
       case NotificationPriority.high:
         return Priority.high;
       case NotificationPriority.max:
         return Priority.max;
+      default:
+        return Priority.defaultPriority;
     }
   }
 
-  // Callback handlers
-
-  static void _onNotificationTap(NotificationResponse response) {
+  static void _onNotificationTap(NotificationResponse r) {
     if (AppConfig.isDebugMode) {
-      print('📱 Notification tapped: ${response.payload}');
+      print('📱 Notification tapped: ${r.payload}');
     }
-    
-    _handleNotificationAction(response);
+    _handleNotificationAction(r);
   }
 
   @pragma('vm:entry-point')
-  static void _onBackgroundNotificationTap(NotificationResponse response) {
+  static void _onBackgroundNotificationTap(NotificationResponse r) {
     if (AppConfig.isDebugMode) {
-      print('📱 Background notification tapped: ${response.payload}');
+      print('📱 Background tap: ${r.payload}');
     }
-    
-    _handleNotificationAction(response);
+    _handleNotificationAction(r);
   }
 
-  static void _handleNotificationAction(NotificationResponse response) {
-    if (response.payload == null) return;
-
+  static void _handleNotificationAction(NotificationResponse r) {
+    if (r.payload == null) return;
     try {
-      final payload = jsonDecode(response.payload!);
+      final payload = jsonDecode(r.payload!);
       final type = payload['type'] as String?;
       final data = payload['data'] as Map<String, dynamic>?;
 
       switch (type) {
         case 'message':
-          // Handle message notification
           _handleMessageNotification(data);
           break;
         case 'assignment':
-          // Handle assignment notification
           _handleAssignmentNotification(data);
           break;
         case 'announcement':
-          // Handle announcement notification
           _handleAnnouncementNotification(data);
           break;
         case 'reminder':
-          // Handle reminder notification
           _handleReminderNotification(data);
           break;
         default:
-          // Handle generic notification
           _handleGenericNotification(data);
       }
     } catch (e) {
       if (AppConfig.isDebugMode) {
-        print('❌ Failed to handle notification action: $e');
+        print('❌ Handle notification error: $e');
       }
     }
   }
 
-  static void _handleMessageNotification(Map<String, dynamic>? data) {
-    // Navigate to messages or specific conversation
-    if (AppConfig.isDebugMode) {
-      print('💬 Handling message notification: $data');
-    }
-  }
+  static void _handleMessageNotification(Map<String, dynamic>? d) =>
+      print('💬 Handling message notification: $d');
 
-  static void _handleAssignmentNotification(Map<String, dynamic>? data) {
-    // Navigate to assignment or quiz
-    if (AppConfig.isDebugMode) {
-      print('📝 Handling assignment notification: $data');
-    }
-  }
+  static void _handleAssignmentNotification(Map<String, dynamic>? d) =>
+      print('📝 Handling assignment notification: $d');
 
-  static void _handleAnnouncementNotification(Map<String, dynamic>? data) {
-    // Navigate to announcements
-    if (AppConfig.isDebugMode) {
-      print('📢 Handling announcement notification: $data');
-    }
-  }
+  static void _handleAnnouncementNotification(Map<String, dynamic>? d) =>
+      print('📢 Handling announcement notification: $d');
 
-  static void _handleReminderNotification(Map<String, dynamic>? data) {
-    // Handle reminder (could be study reminder, schedule alert, etc.)
-    if (AppConfig.isDebugMode) {
-      print('⏰ Handling reminder notification: $data');
-    }
-  }
+  static void _handleReminderNotification(Map<String, dynamic>? d) =>
+      print('⏰ Handling reminder notification: $d');
 
-  static void _handleGenericNotification(Map<String, dynamic>? data) {
-    // Handle generic notification
-    if (AppConfig.isDebugMode) {
-      print('📬 Handling generic notification: $data');
-    }
-  }
+  static void _handleGenericNotification(Map<String, dynamic>? d) =>
+      print('📬 Handling generic notification: $d');
 }
 
-// Enums and Models
-
-enum NotificationPriority {
-  low,
-  defaultPriority,
-  high,
-  max,
-}
+enum NotificationPriority { low, defaultPriority, high, max }
 
 class NotificationAction {
   final String id;
   final String title;
   final String? icon;
 
-  const NotificationAction({
-    required this.id,
-    required this.title,
-    this.icon,
-  });
+  const NotificationAction({required this.id, required this.title, this.icon});
 }
 
-// Common notification helpers
 extension NotificationHelpers on NotificationService {
-  /// Show a message notification
   Future<void> showMessageNotification({
     required int id,
     required String senderName,
@@ -688,7 +568,6 @@ extension NotificationHelpers on NotificationService {
     );
   }
 
-  /// Show an assignment notification
   Future<void> showAssignmentNotification({
     required int id,
     required String assignmentTitle,
@@ -714,7 +593,6 @@ extension NotificationHelpers on NotificationService {
     );
   }
 
-  /// Show a reminder notification
   Future<void> showStudyReminder({
     required int id,
     required String subject,
@@ -723,10 +601,7 @@ extension NotificationHelpers on NotificationService {
   }) async {
     final payload = jsonEncode({
       'type': 'reminder',
-      'data': {
-        'subject': subject,
-        'topic': topic,
-      }
+      'data': {'subject': subject, 'topic': topic}
     });
 
     if (scheduledTime != null) {
@@ -751,16 +626,11 @@ extension NotificationHelpers on NotificationService {
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
-    final difference = date.difference(now);
+    final diff = date.difference(now);
 
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Tomorrow';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
+    if (diff.inDays == 0) return 'Today';
+    if (diff.inDays == 1) return 'Tomorrow';
+    if (diff.inDays < 7) return '${diff.inDays} days';
+    return '${date.day}/${date.month}/${date.year}';
   }
 }
