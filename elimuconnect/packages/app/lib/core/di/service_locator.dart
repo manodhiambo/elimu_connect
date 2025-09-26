@@ -11,9 +11,8 @@ class ServiceLocator {
   static GetIt get instance => _getIt;
   
   static Future<void> init() async {
-    print('🔧 Initializing ServiceLocator...');
+    print('Initializing ServiceLocator...');
     
-    // Core dependencies
     final sharedPreferences = await SharedPreferences.getInstance();
     _getIt.registerSingleton<SharedPreferences>(sharedPreferences);
     
@@ -25,13 +24,11 @@ class ServiceLocator {
     );
     _getIt.registerSingleton<FlutterSecureStorage>(secureStorage);
     
-    // HTTP Client
     final dio = Dio();
     dio.options.baseUrl = 'http://localhost:8080/api/v1';
     dio.options.connectTimeout = const Duration(seconds: 30);
     _getIt.registerSingleton<Dio>(dio);
     
-    // Services
     _getIt.registerLazySingleton<StorageService>(
       () => StorageService(
         secureStorage: _getIt<FlutterSecureStorage>(),
@@ -46,7 +43,7 @@ class ServiceLocator {
       ),
     );
     
-    print('✅ ServiceLocator initialized');
+    print('ServiceLocator initialized');
   }
   
   static T get<T extends Object>() => _getIt<T>();
