@@ -1,206 +1,102 @@
-// File: packages/app/lib/src/features/auth/providers/auth_provider.dart
-
+// packages/app/lib/src/providers/auth_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
-import 'dart:convert';
-
-import '../../../core/di/service_locator.dart';
+import '../core/di/service_locator.dart';
 import '../../../services/storage_service.dart';
 import '../../../services/api_service.dart';
 
-// Models for authentication
-enum UserRole { 
-  student, 
-  teacher, 
-  parent, 
-  admin 
+// Auth state models
+class AuthState {
+  final bool isAuthenticated;
+  final bool isLoading;
+  final String? error;
+  final UserProfile? user;
+  
+  const AuthState({
+    this.isAuthenticated = false,
+    this.isLoading = false,
+    this.error,
+    this.user,
+  });
+  
+  AuthState copyWith({
+    bool? isAuthenticated,
+    bool? isLoading,
+    String? error,
+    UserProfile? user,
+  }) {
+    return AuthState(
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+      user: user ?? this.user,
+    );
+  }
 }
 
-enum AuthStatus { 
-  initial, 
-  loading, 
-  authenticated, 
-  unauthenticated, 
-  error 
-}
-
-class User {
+class UserProfile {
   final String id;
   final String name;
   final String email;
-  final UserRole role;
-  final String? schoolId;
-  final String? profileImageUrl;
-  final Map<String, dynamic> metadata;
-  final DateTime createdAt;
-  final DateTime lastLoginAt;
-
-  const User({
+  final String role;
+  final Map<String, dynamic> additionalInfo;
+  
+  const UserProfile({
     required this.id,
     required this.name,
     required this.email,
     required this.role,
-    this.schoolId,
-    this.profileImageUrl,
-    this.metadata = const {},
-    required this.createdAt,
-    required this.lastLoginAt,
+    this.additionalInfo = const {},
   });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      role: UserRole.values.firstWhere(
-        (role) => role.name == json['role'],
-        orElse: () => UserRole.student,
-      ),
-      schoolId: json['school_id'],
-      profileImageUrl: json['profile_image_url'],
-      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
-      createdAt: DateTime.parse(json['created_at']),
-      lastLoginAt: DateTime.parse(json['last_login_at']),
+  
+  factory UserProfile.fromMap(Map<String, dynamic> map) {
+    return UserProfile(
+      id: map['id']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      email: map['email']?.toString() ?? '',
+      role: map['role']?.toString() ?? 'student',
+      additionalInfo: Map<String, dynamic>.from(map)
+        ..removeWhere((key, value) => ['id', 'name', 'email', 'role'].contains(key)),
     );
   }
-
-  Map<String, dynamic> toJson() {
+  
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
       'email': email,
-      'role': role.name,
-      'school_id': schoolId,
-      'profile_image_url': profileImageUrl,
-      'metadata': metadata,
-      'created_at': createdAt.toIso8601String(),
-      'last_login_at': lastLoginAt.toIso8601String(),
+      'role': role,
+      ...additionalInfo,
     };
   }
-
-  User copyWith({
-    String? id,
-    String? name,
-    String? email,
-    UserRole? role,
-    String? schoolId,
-    String? profileImageUrl,
-    Map<String, dynamic>? metadata,
-    DateTime? createdAt,
-    DateTime? lastLoginAt,
-  }) {
-    return User(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      role: role ?? this.role,
-      schoolId: schoolId ?? this.schoolId,
-      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
-      metadata: metadata ?? this.metadata,
-      createdAt: createdAt ?? this.createdAt,
-      lastLoginAt: lastLoginAt ?? this.lastLoginAt,
-    );
-  }
-}
-
-class AuthState {
-  final AuthStatus status;
-  final User? user;
-  final String? error;
-  final bool isLoading;
-
-  const AuthState({
-    required this.status,
-    this.user,
-    this.error,
-    this.isLoading = false,
-  });
-
-  factory AuthState.initial() {
-    return const AuthState(status: AuthStatus.initial);
-  }
-
-  factory AuthState.loading() {
-    return const AuthState(status: AuthStatus.loading, isLoading: true);
-  }
-
-  factory AuthState.authenticated(User user) {
-    return AuthState(status: AuthStatus.authenticated, user: user);
-  }
-
-  factory AuthState.unauthenticated() {
-    return const AuthState(status: AuthStatus.unauthenticated);
-  }
-
-  factory AuthState.error(String error) {
-    return AuthState(status: AuthStatus.error, error: error);
-  }
-
-  AuthState copyWith({
-    AuthStatus? status,
-    User? user,
-    String? error,
-    bool? isLoading,
-  }) {
-    return AuthState(
-      status: status ?? this.status,
-      user: user ?? this.user,
-      error: error ?? this.error,
-      isLoading: isLoading ?? this.isLoading,
-    );
-  }
-
-  bool get isAuthenticated => status == AuthStatus.authenticated && user != null;
-  bool get isUnauthenticated => status == AuthStatus.unauthenticated;
-  bool get hasError => status == AuthStatus.error && error != null;
 }
 
 // Registration request models
-abstract class RegistrationRequest {
-  Map<String, dynamic> toJson();
-}
-
-class StudentRegistrationRequest implements RegistrationRequest {
+class AdminRegistrationRequest {
   final String name;
   final String email;
   final String password;
-  final String admissionNumber;
-  final String schoolId;
-  final String className;
-  final DateTime dateOfBirth;
-  final String parentGuardianContact;
-  final String countyOfResidence;
-
-  const StudentRegistrationRequest({
+  final String adminCode;
+  final String institutionId;
+  
+  const AdminRegistrationRequest({
     required this.name,
     required this.email,
     required this.password,
-    required this.admissionNumber,
-    required this.schoolId,
-    required this.className,
-    required this.dateOfBirth,
-    required this.parentGuardianContact,
-    required this.countyOfResidence,
+    required this.adminCode,
+    required this.institutionId,
   });
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'email': email,
-      'password': password,
-      'role': 'student',
-      'admission_number': admissionNumber,
-      'school_id': schoolId,
-      'class_name': className,
-      'date_of_birth': dateOfBirth.toIso8601String(),
-      'parent_guardian_contact': parentGuardianContact,
-      'county_of_residence': countyOfResidence,
-    };
-  }
+  
+  Map<String, dynamic> toMap() => {
+    'name': name,
+    'email': email,
+    'password': password,
+    'admin_code': adminCode,
+    'institution_id': institutionId,
+    'role': 'admin',
+  };
 }
 
-class TeacherRegistrationRequest implements RegistrationRequest {
+class TeacherRegistrationRequest {
   final String name;
   final String email;
   final String password;
@@ -210,7 +106,7 @@ class TeacherRegistrationRequest implements RegistrationRequest {
   final List<String> subjectsTaught;
   final List<String> classesAssigned;
   final String qualification;
-
+  
   const TeacherRegistrationRequest({
     required this.name,
     required this.email,
@@ -222,25 +118,59 @@ class TeacherRegistrationRequest implements RegistrationRequest {
     required this.classesAssigned,
     required this.qualification,
   });
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'email': email,
-      'password': password,
-      'role': 'teacher',
-      'phone_number': phoneNumber,
-      'tsc_number': tscNumber,
-      'school_id': schoolId,
-      'subjects_taught': subjectsTaught,
-      'classes_assigned': classesAssigned,
-      'qualification': qualification,
-    };
-  }
+  
+  Map<String, dynamic> toMap() => {
+    'name': name,
+    'email': email,
+    'password': password,
+    'phone_number': phoneNumber,
+    'tsc_number': tscNumber,
+    'school_id': schoolId,
+    'subjects_taught': subjectsTaught,
+    'classes_assigned': classesAssigned,
+    'qualification': qualification,
+    'role': 'teacher',
+  };
 }
 
-class ParentRegistrationRequest implements RegistrationRequest {
+class StudentRegistrationRequest {
+  final String name;
+  final String email;
+  final String password;
+  final String admissionNumber;
+  final String schoolId;
+  final String className;
+  final DateTime dateOfBirth;
+  final String parentGuardianContact;
+  final String countyOfResidence;
+  
+  const StudentRegistrationRequest({
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.admissionNumber,
+    required this.schoolId,
+    required this.className,
+    required this.dateOfBirth,
+    required this.parentGuardianContact,
+    required this.countyOfResidence,
+  });
+  
+  Map<String, dynamic> toMap() => {
+    'name': name,
+    'email': email,
+    'password': password,
+    'admission_number': admissionNumber,
+    'school_id': schoolId,
+    'class_name': className,
+    'date_of_birth': dateOfBirth.toIso8601String(),
+    'parent_guardian_contact': parentGuardianContact,
+    'county_of_residence': countyOfResidence,
+    'role': 'student',
+  };
+}
+
+class ParentRegistrationRequest {
   final String name;
   final String email;
   final String password;
@@ -249,7 +179,7 @@ class ParentRegistrationRequest implements RegistrationRequest {
   final List<String> childrenAdmissionNumbers;
   final String relationshipToChildren;
   final String address;
-
+  
   const ParentRegistrationRequest({
     required this.name,
     required this.email,
@@ -260,485 +190,292 @@ class ParentRegistrationRequest implements RegistrationRequest {
     required this.relationshipToChildren,
     required this.address,
   });
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'email': email,
-      'password': password,
-      'role': 'parent',
-      'phone_number': phoneNumber,
-      'national_id': nationalId,
-      'children_admission_numbers': childrenAdmissionNumbers,
-      'relationship_to_children': relationshipToChildren,
-      'address': address,
-    };
-  }
+  
+  Map<String, dynamic> toMap() => {
+    'name': name,
+    'email': email,
+    'password': password,
+    'phone_number': phoneNumber,
+    'national_id': nationalId,
+    'children_admission_numbers': childrenAdmissionNumbers,
+    'relationship_to_children': relationshipToChildren,
+    'address': address,
+    'role': 'parent',
+  };
 }
 
-class AdminRegistrationRequest implements RegistrationRequest {
-  final String name;
-  final String email;
-  final String password;
-  final String adminCode;
-  final String institutionId;
-
-  const AdminRegistrationRequest({
-    required this.name,
-    required this.email,
-    required this.password,
-    required this.adminCode,
-    required this.institutionId,
-  });
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'email': email,
-      'password': password,
-      'role': 'admin',
-      'admin_code': adminCode,
-      'institution_id': institutionId,
-    };
-  }
-}
-
-// Authentication Provider
+// Auth provider implementation
 class AuthNotifier extends StateNotifier<AuthState> {
   final ApiService _apiService;
   final StorageService _storageService;
-
+  
   AuthNotifier({
     required ApiService apiService,
     required StorageService storageService,
-  })  : _apiService = apiService,
-        _storageService = storageService,
-        super(AuthState.initial());
-
-  static const String _tokenKey = 'auth_token';
-  static const String _refreshTokenKey = 'refresh_token';
-  static const String _userKey = 'user_data';
-
-  /// Initialize authentication state from stored tokens
-  Future<void> initialize() async {
+  }) : _apiService = apiService,
+       _storageService = storageService,
+       super(const AuthState()) {
+    _initializeAuth();
+  }
+  
+  Future<void> _initializeAuth() async {
+    state = state.copyWith(isLoading: true);
+    
     try {
-      state = AuthState.loading();
-
-      final token = await _storageService.getString(_tokenKey);
-      final refreshToken = await _storageService.getString(_refreshTokenKey);
-      final userData = await _storageService.getString(_userKey);
-
-      if (token == null || userData == null) {
-        state = AuthState.unauthenticated();
-        return;
-      }
-
-      // Parse stored user data
-      final userJson = jsonDecode(userData);
-      final user = User.fromJson(userJson);
-
-      // Verify token validity
-      final isValid = await _verifyToken(token);
-      if (!isValid) {
-        // Try to refresh token
-        if (refreshToken != null) {
-          final refreshed = await _refreshAuthToken(refreshToken);
-          if (!refreshed) {
-            await _clearAuthData();
-            state = AuthState.unauthenticated();
-            return;
-          }
-        } else {
-          await _clearAuthData();
-          state = AuthState.unauthenticated();
+      final isAuthenticated = await _storageService.isAuthenticated();
+      if (isAuthenticated) {
+        final profileData = await _storageService.getUserProfile();
+        if (profileData != null) {
+          final user = UserProfile.fromMap(profileData);
+          state = state.copyWith(
+            isAuthenticated: true,
+            isLoading: false,
+            user: user,
+          );
           return;
         }
       }
-
-      // Set API authorization header
-      _apiService.setAuthToken(token);
-      state = AuthState.authenticated(user);
-
+      
+      state = state.copyWith(isLoading: false);
     } catch (e) {
-      await _clearAuthData();
-      state = AuthState.error('Failed to initialize authentication: $e');
-    }
-  }
-
-  /// Login with email and password
-  Future<bool> login(String email, String password) async {
-    try {
-      state = state.copyWith(isLoading: true, status: AuthStatus.loading);
-
-      final response = await _apiService.post('/auth/login', data: {
-        'email': email.toLowerCase().trim(),
-        'password': password,
-      });
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        
-        // Extract tokens and user data
-        final token = data['token'];
-        final refreshToken = data['refresh_token'];
-        final userData = data['user'];
-        
-        if (token == null || userData == null) {
-          state = AuthState.error('Invalid response from server');
-          return false;
-        }
-
-        // Create user object
-        final user = User.fromJson(userData);
-
-        // Store auth data
-        await _storeAuthData(token, refreshToken, user);
-
-        // Set API authorization header
-        _apiService.setAuthToken(token);
-
-        // Update state
-        state = AuthState.authenticated(user);
-        
-        return true;
-      } else {
-        final errorMsg = response.data?['message'] ?? 'Login failed';
-        state = AuthState.error(errorMsg);
-        return false;
-      }
-    } catch (e) {
-      if (e is DioException) {
-        final errorMsg = e.response?.data?['message'] ?? 'Network error occurred';
-        state = AuthState.error(errorMsg);
-      } else {
-        state = AuthState.error('Login failed: $e');
-      }
-      return false;
-    }
-  }
-
-  /// Register a new user with role-specific data
-  Future<bool> register(RegistrationRequest request) async {
-    try {
-      state = state.copyWith(isLoading: true, status: AuthStatus.loading);
-
-      final response = await _apiService.post('/auth/register', 
-        data: request.toJson(),
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to initialize authentication: $e',
       );
-
-      if (response.statusCode == 201) {
-        final data = response.data;
+    }
+  }
+  
+  Future<bool> login({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      final response = await _apiService.login(
+        email: email,
+        password: password,
+      );
+      
+      if (response.isSuccess && response.data != null) {
+        final data = response.data!;
         
-        // Some implementations return tokens immediately after registration
-        if (data['token'] != null && data['user'] != null) {
-          final token = data['token'];
-          final refreshToken = data['refresh_token'];
-          final userData = data['user'];
+        // Save tokens
+        if (data['access_token'] != null && data['refresh_token'] != null) {
+          await _storageService.saveAuthTokens(
+            accessToken: data['access_token'],
+            refreshToken: data['refresh_token'],
+          );
+        }
+        
+        // Save user profile
+        if (data['user'] != null) {
+          final userData = data['user'] as Map<String, dynamic>;
+          await _storageService.saveUserProfile(userData);
           
-          final user = User.fromJson(userData);
-          await _storeAuthData(token, refreshToken, user);
-          _apiService.setAuthToken(token);
-          state = AuthState.authenticated(user);
-        } else {
-          // Registration successful, but requires email verification
-          state = AuthState.unauthenticated();
+          final user = UserProfile.fromMap(userData);
+          state = state.copyWith(
+            isAuthenticated: true,
+            isLoading: false,
+            user: user,
+          );
         }
         
         return true;
       } else {
-        final errorMsg = response.data?['message'] ?? 'Registration failed';
-        state = AuthState.error(errorMsg);
+        state = state.copyWith(
+          isLoading: false,
+          error: response.error ?? 'Login failed',
+        );
         return false;
       }
     } catch (e) {
-      if (e is DioException) {
-        final errorMsg = e.response?.data?['message'] ?? 'Network error occurred';
-        state = AuthState.error(errorMsg);
-      } else {
-        state = AuthState.error('Registration failed: $e');
-      }
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Login error: $e',
+      );
       return false;
     }
   }
-
-  /// Logout user and clear all stored data
-  Future<void> logout() async {
-    try {
-      // Call logout endpoint
-      await _apiService.post('/auth/logout');
-    } catch (e) {
-      // Continue with logout even if API call fails
-    } finally {
-      await _clearAuthData();
-      _apiService.clearAuthToken();
-      state = AuthState.unauthenticated();
-    }
+  
+  Future<bool> registerAdmin(AdminRegistrationRequest request) async {
+    return _register(request.toMap());
   }
-
-  /// Refresh authentication state (check if still valid)
-  Future<void> refreshAuthState() async {
-    if (!state.isAuthenticated) return;
-
+  
+  Future<bool> registerTeacher(TeacherRegistrationRequest request) async {
+    return _register(request.toMap());
+  }
+  
+  Future<bool> registerStudent(StudentRegistrationRequest request) async {
+    return _register(request.toMap());
+  }
+  
+  Future<bool> registerParent(ParentRegistrationRequest request) async {
+    return _register(request.toMap());
+  }
+  
+  Future<bool> _register(Map<String, dynamic> registrationData) async {
+    state = state.copyWith(isLoading: true, error: null);
+    
     try {
-      final token = await _storageService.getString(_tokenKey);
-      if (token == null) {
-        await logout();
-        return;
-      }
-
-      final isValid = await _verifyToken(token);
-      if (!isValid) {
-        final refreshToken = await _storageService.getString(_refreshTokenKey);
-        if (refreshToken != null) {
-          final refreshed = await _refreshAuthToken(refreshToken);
-          if (!refreshed) {
-            await logout();
+      final response = await _apiService.register(
+        name: registrationData['name'],
+        email: registrationData['email'],
+        password: registrationData['password'],
+        role: registrationData['role'],
+        additionalData: Map<String, dynamic>.from(registrationData)
+          ..removeWhere((key, value) => ['name', 'email', 'password', 'role'].contains(key)),
+      );
+      
+      if (response.isSuccess && response.data != null) {
+        final data = response.data!;
+        
+        // Save tokens if provided (some APIs auto-login after registration)
+        if (data['access_token'] != null && data['refresh_token'] != null) {
+          await _storageService.saveAuthTokens(
+            accessToken: data['access_token'],
+            refreshToken: data['refresh_token'],
+          );
+          
+          // Save user profile if provided
+          if (data['user'] != null) {
+            final userData = data['user'] as Map<String, dynamic>;
+            await _storageService.saveUserProfile(userData);
+            
+            final user = UserProfile.fromMap(userData);
+            state = state.copyWith(
+              isAuthenticated: true,
+              isLoading: false,
+              user: user,
+            );
           }
         } else {
-          await logout();
+          // Registration successful but not auto-logged in
+          state = state.copyWith(isLoading: false);
         }
-      }
-    } catch (e) {
-      // Handle silently, maintain current state
-    }
-  }
-
-  /// Update user profile
-  Future<bool> updateProfile(Map<String, dynamic> updates) async {
-    try {
-      if (!state.isAuthenticated) return false;
-
-      state = state.copyWith(isLoading: true);
-
-      final response = await _apiService.put('/user/profile', data: updates);
-
-      if (response.statusCode == 200) {
-        final updatedUserData = response.data['user'];
-        final updatedUser = User.fromJson(updatedUserData);
         
-        // Update stored user data
-        await _storageService.setString(_userKey, jsonEncode(updatedUser.toJson()));
-        
-        state = AuthState.authenticated(updatedUser);
         return true;
       } else {
-        state = state.copyWith(isLoading: false);
+        state = state.copyWith(
+          isLoading: false,
+          error: response.error ?? 'Registration failed',
+        );
         return false;
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false);
-      return false;
-    }
-  }
-
-  /// Change user password
-  Future<bool> changePassword(String currentPassword, String newPassword) async {
-    try {
-      if (!state.isAuthenticated) return false;
-
-      final response = await _apiService.post('/auth/change-password', data: {
-        'current_password': currentPassword,
-        'new_password': newPassword,
-      });
-
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Request password reset
-  Future<bool> requestPasswordReset(String email) async {
-    try {
-      final response = await _apiService.post('/auth/forgot-password', data: {
-        'email': email.toLowerCase().trim(),
-      });
-
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Reset password with token
-  Future<bool> resetPassword(String token, String newPassword) async {
-    try {
-      final response = await _apiService.post('/auth/reset-password', data: {
-        'token': token,
-        'new_password': newPassword,
-      });
-
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Verify email with token
-  Future<bool> verifyEmail(String token) async {
-    try {
-      final response = await _apiService.post('/auth/verify-email', data: {
-        'token': token,
-      });
-
-      if (response.statusCode == 200) {
-        // If user data is returned, update current user
-        final userData = response.data['user'];
-        if (userData != null && state.user != null) {
-          final updatedUser = User.fromJson(userData);
-          await _storageService.setString(_userKey, jsonEncode(updatedUser.toJson()));
-          state = AuthState.authenticated(updatedUser);
-        }
-        return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Get dashboard route based on user role
-  String getDashboardRoute() {
-    if (!state.isAuthenticated || state.user == null) {
-      return '/login';
-    }
-
-    switch (state.user!.role) {
-      case UserRole.student:
-        return '/dashboard/student';
-      case UserRole.teacher:
-        return '/dashboard/teacher';
-      case UserRole.parent:
-        return '/dashboard/parent';
-      case UserRole.admin:
-        return '/dashboard/admin';
-    }
-  }
-
-  /// Check if user has permission for a specific action
-  bool hasPermission(String permission) {
-    if (!state.isAuthenticated || state.user == null) return false;
-
-    // Define role-based permissions
-    final rolePermissions = {
-      UserRole.student: [
-        'read_content',
-        'take_assessments',
-        'view_progress',
-        'send_messages',
-      ],
-      UserRole.teacher: [
-        'read_content',
-        'create_content',
-        'create_assessments',
-        'grade_assessments',
-        'view_class_progress',
-        'send_messages',
-        'manage_classes',
-      ],
-      UserRole.parent: [
-        'view_child_progress',
-        'send_messages',
-        'schedule_meetings',
-      ],
-      UserRole.admin: [
-        'manage_users',
-        'manage_schools',
-        'manage_content',
-        'view_analytics',
-        'system_settings',
-      ],
-    };
-
-    final userPermissions = rolePermissions[state.user!.role] ?? [];
-    return userPermissions.contains(permission);
-  }
-
-  // Private helper methods
-
-  Future<void> _storeAuthData(String token, String? refreshToken, User user) async {
-    await _storageService.setString(_tokenKey, token);
-    if (refreshToken != null) {
-      await _storageService.setString(_refreshTokenKey, refreshToken);
-    }
-    await _storageService.setString(_userKey, jsonEncode(user.toJson()));
-  }
-
-  Future<void> _clearAuthData() async {
-    await _storageService.remove(_tokenKey);
-    await _storageService.remove(_refreshTokenKey);
-    await _storageService.remove(_userKey);
-  }
-
-  Future<bool> _verifyToken(String token) async {
-    try {
-      final response = await _apiService.get('/auth/verify-token', 
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Registration error: $e',
       );
-      return response.statusCode == 200;
-    } catch (e) {
       return false;
     }
   }
-
-  Future<bool> _refreshAuthToken(String refreshToken) async {
+  
+  Future<void> logout() async {
+    state = state.copyWith(isLoading: true);
+    
     try {
-      final response = await _apiService.post('/auth/refresh-token', data: {
-        'refresh_token': refreshToken,
-      });
-
-      if (response.statusCode == 200) {
-        final newToken = response.data['token'];
-        final newRefreshToken = response.data['refresh_token'];
+      // Clear local storage
+      await _storageService.clearAuthTokens();
+      await _storageService.clearUserData();
+      
+      state = const AuthState();
+    } catch (e) {
+      print('Logout error: $e');
+      // Even if there's an error, we should clear the state
+      state = const AuthState();
+    }
+  }
+  
+  Future<bool> refreshToken() async {
+    try {
+      final response = await _apiService.refreshToken();
+      
+      if (response.isSuccess && response.data != null) {
+        final data = response.data!;
         
-        await _storageService.setString(_tokenKey, newToken);
-        if (newRefreshToken != null) {
-          await _storageService.setString(_refreshTokenKey, newRefreshToken);
+        if (data['access_token'] != null && data['refresh_token'] != null) {
+          await _storageService.saveAuthTokens(
+            accessToken: data['access_token'],
+            refreshToken: data['refresh_token'],
+          );
+          return true;
         }
-        
-        _apiService.setAuthToken(newToken);
-        return true;
       }
+      
+      // If refresh fails, logout user
+      await logout();
       return false;
     } catch (e) {
+      print('Token refresh error: $e');
+      await logout();
       return false;
     }
+  }
+  
+  Future<bool> updateProfile(Map<String, dynamic> profileData) async {
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      final response = await _apiService.updateUserProfile(profileData);
+      
+      if (response.isSuccess && response.data != null) {
+        final userData = response.data!;
+        await _storageService.saveUserProfile(userData);
+        
+        final user = UserProfile.fromMap(userData);
+        state = state.copyWith(
+          isLoading: false,
+          user: user,
+        );
+        
+        return true;
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: response.error ?? 'Profile update failed',
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Profile update error: $e',
+      );
+      return false;
+    }
+  }
+  
+  void clearError() {
+    state = state.copyWith(error: null);
   }
 }
 
 // Provider definitions
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
-    apiService: ServiceLocator.instance<ApiService>(),
-    storageService: ServiceLocator.instance<StorageService>(),
+    apiService: ServiceLocator.get<ApiService>(),
+    storageService: ServiceLocator.get<StorageService>(),
   );
 });
 
-// Utility providers
-final currentUserProvider = Provider<User?>((ref) {
-  final authState = ref.watch(authProvider);
-  return authState.user;
-});
-
+// Computed providers
 final isAuthenticatedProvider = Provider<bool>((ref) {
-  final authState = ref.watch(authProvider);
-  return authState.isAuthenticated;
+  return ref.watch(authProvider).isAuthenticated;
 });
 
-final userRoleProvider = Provider<UserRole?>((ref) {
-  final user = ref.watch(currentUserProvider);
-  return user?.role;
+final currentUserProvider = Provider<UserProfile?>((ref) {
+  return ref.watch(authProvider).user;
 });
 
-final dashboardRouteProvider = Provider<String>((ref) {
-  final authNotifier = ref.read(authProvider.notifier);
-  return authNotifier.getDashboardRoute();
+final authLoadingProvider = Provider<bool>((ref) {
+  return ref.watch(authProvider).isLoading;
 });
 
-// Permission checking provider
-final permissionProvider = Provider.family<bool, String>((ref, permission) {
-  final authNotifier = ref.read(authProvider.notifier);
-  return authNotifier.hasPermission(permission);
+final authErrorProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider).error;
+});
+
+final userRoleProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider).user?.role;
 });
