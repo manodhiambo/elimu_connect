@@ -791,7 +791,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'Select Your Role',
-                  style: Theme.ocontext).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleMedm?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -806,8 +806,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 return ChoiceChip(
                   label: Text(
                     role.toUpperCase(),
-                    style: Ttyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    style: TextStyle(
+                   ntWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   selected: isSelected,
@@ -819,8 +819,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                       });
                     }
                   },
-                  selectedColor: Theme.of(context).colorheme.primaryContainer,
-                  avatar: Icon(
+                  selectedColor: Theme.of(context).colorScheme.primaryContainer,
+               avatar: Icon(
                     _getRoleIcon(role),
                     size: 18,
                   ),
@@ -833,8 +833,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
-                  borderRadius:orderRadius.circular(8),
-                  border: Border.all(color: Colors.orange),
+                  borderRadius: BorderRadius.circular(8),
+           border: Border.all(color: Colors.orange),
                 ),
                 child: Row(
                   children: [
@@ -844,8 +844,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                       child: Text(
                         'Admin registration requires a special access code',
                         style: TextStyle(
-                          color: Colors.orane[800],
-                          fontSize: 12,
+                          color: Colors.orange[800],
+                          fize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -867,8 +867,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         return Icons.person;
       case 'parent':
         return Icons.family_restroom;
-      casen':
-        return Icons.admin_panel_settings;
+      case 'admin':
+        return Icons.admin_pasettings;
       default:
         return Icons.person;
     }
@@ -885,8 +885,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             hintText: 'Enter your full name',
           ),
           validator: (value) {
-            if (value == null || value.trim().isEmpt) {
-              return 'Please enter your full name';
+            if (value == null || value.trim().isEmpty) {
+              return 'Please entr your full name';
             }
             if (value.trim().length < 2) {
               return 'Name must be at least 2 characters';
@@ -901,8 +901,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           keyboardType: TextInputType.emailAddress,
           decoration: const InputDecoration(
             labelText: 'Email Address *',
-            prefixIcon: Icon(Ins.email_outlined),
-            hintText: 'Enter your email address',
+            prefixIcon: Icon(Icons.email_outlined),
+            hinext: 'Enter your email address',
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -917,8 +917,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         const SizedBox(height: 20),
         
         TextFormField(
-          contro: _passwordController,
-          obscureText: _obscurePassword,
+          controller: _passwordController,
+          ureText: _obscurePassword,
           decoration: InputDecoration(
             labelText: 'Password *',
             prefixIcon: const Icon(Icons.lock_outline),
@@ -932,7 +932,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 });
               },
             ),
-            hintText: 'Create a strong password',
+            hintText: 'Create g password',
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -944,10 +944,10 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)').hasMatch(value)) {
               return 'Password must contain uppercase, lowercase, and number';
             }
-            renull;
+            return null;
           },
         ),
-        const SizedBox(height: 20),
+        cizedBox(height: 20),
         
         TextFormField(
           controller: _confirmPasswordController,
@@ -959,9 +959,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               icon: Icon(
                 _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
               ),
-              ressed: () {
-                setState(() {
-                  _obscureConfirmPassword = !_obscureConfirmPassword;
+              onPressed: () {
+                setState(() {               _obscureConfirmPassword = !_obscureConfirmPassword;
                 });
               },
             ),
@@ -980,7 +979,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   
   Widget _buildRoleSpecificFields() {
     switch (_selectedRole) {
-    case 'admin':
+      case 'admin':
         return _buildAdminFields();
       case 'teacher':
         return _buildTeacherFields();
@@ -1001,7 +1000,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16),
-     child: Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -1013,8 +1012,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _adminCodeController,
-                  decoration: const InputDection(
-                    labelText: 'Admin Access Code *',
+                  decoration: const InputDecoration(
+                    labelTex'Admin Access Code *',
                     prefixIcon: Icon(Icons.admin_panel_settings),
                     helperText: 'Enter the special admin code to proceed',
                     hintText: 'OnlyMe@2025',
@@ -1023,7 +1022,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     if (_selectedRole == 'admin' && value != 'OnlyMe@2025') {
                       return 'Invalid admin code. Contact system administrator.';
                     }
-                    retul;
+                    return null;
                   },
                 ),
               ],
@@ -1046,7 +1045,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Teacher Information,
+                  'Teacher Information',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -1058,8 +1057,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Phone Number *',
                     prefixIcon: Icon(Icons.phone),
-                   hintText: '+254XXXXXXXXX',
-                  ),
+                    hintText: '+254XXXXXXXXX',            ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your phone number';
@@ -1072,7 +1070,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 TextFormField(
                   controller: _tscNumberController,
                   decoration: const InputDecoration(
-                labelText: 'TSC Number *',
+                    labelText: 'TSC Number *'
                     prefixIcon: Icon(Icons.badge),
                     helperText: 'Teachers Service Commission Number',
                     hintText: 'e.g., TSC/123456',
@@ -1084,7 +1082,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(het: 16),
+                const SizedBox(height: 16),
                 
                 TextFormField(
                   controller: _schoolIdController,
@@ -1097,7 +1095,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your school name';
                     }
-                    return null;
+                    retun null;
                   },
                 ),
                 const SizedBox(height: 16),
@@ -1109,8 +1107,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     prefixIcon: Icon(Icons.school),
                     hintText: 'e.g., Bachelor of Education, Diploma',
                   ),
-                  validator: (vue) {
-                    if (value == null || value.isEmpty) {
+                  validator: (value) {
+                    if value == null || value.isEmpty) {
                       return 'Please enter your qualification';
                     }
                     return null;
@@ -1124,7 +1122,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-             const SizedBox(height: 8),
+                const SizedBox(hght: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -1137,7 +1135,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                       selected: _selectedSubjects.contains(subject),
                       onSelected: (selected) {
                         setState(() {
-                          if (selected) {
+                    if (selected) {
                             _selectedSubjects.add(subject);
                           } else {
                             _selectedSubjects.remove(subject);
@@ -1157,7 +1155,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   
   Widget _buildStudentFields() {
     return Column(
-      children        const SizedBox(height: 24),
+      children: [
+        const SizedBox(height: 
         Card(
           elevation: 2,
           child: Padding(
@@ -1171,8 +1170,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SidBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 16),
+               extFormField(
                   controller: _admissionNumberController,
                   decoration: const InputDecoration(
                     labelText: 'Admission Number *',
@@ -1182,7 +1181,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your admission number';
-                }
+                    }
                     return null;
                   },
                 ),
@@ -1196,7 +1195,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     hintText: 'Enter your school name',
                   ),
                   validator: (value) {
-                   if (value == null || value.isEmpty) {
+                    if (value == null || value.is {
                       return 'Please enter your school name';
                     }
                     return null;
@@ -1209,8 +1208,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Class/Grade *',
                     prefixIcon: Icon(Icons.class_),
-                    hinext: 'e.g., Grade 5, Form 2',
-                  ),
+                    hintText: 'e.g., Grade 5, Form 2',
+                ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your class/grade';
@@ -1223,7 +1222,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 TextFormField(
                   controller: _parentContactController,
                   keyboardType: TextInputType.phone,
-               decoration: const InputDecoration(
+                  decoration: const InputDation(
                     labelText: 'Parent/Guardian Contact *',
                     prefixIcon: Icon(Icons.contact_phone),
                     hintText: '+254XXXXXXXXX',
@@ -1235,8 +1234,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     return null;
                   },
                 ),
-                consizedBox(height: 16),
-                
+                const SizedBox(height: 16),
+              
                 DropdownButtonFormField<String>(
                   value: _countyController.text.isEmpty ? null : _countyController.text,
                   decoration: const InputDecoration(
@@ -1246,8 +1245,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   items: _counties.map((county) => DropdownMenuItem(
                     value: county,
                     child: Text(county),
-              )).toList(),
-                  onChanged: (value) {
+                  )).toList(),
+               onChanged: (value) {
                     setState(() {
                       _countyController.text = value ?? '';
                     });
@@ -1263,11 +1262,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             ),
           ),
         ),
-     ],
+      ],
     );
   }
   
-  Widget _buildParentFields() {
+  Widget _buildPaentFields() {
     return Column(
       children: [
         const SizedBox(height: 24),
@@ -1281,8 +1280,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 Text(
                   'Parent/Guardian Information',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                   tWeight: FontWeight.bold,
-                  ),
+                    fontWeight: FontWeight.bold,
+             ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -1294,7 +1293,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     hintText: '+254XXXXXXXXX',
                   ),
                   validator: (value) {
-                   if (value == null || value.isEmpty) {
+                    if (value == null || valuesEmpty) {
                       return 'Please enter your phone number';
                     }
                     return null;
@@ -1307,7 +1306,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'National ID Number *',
-                   prefixIcon: Icon(Icons.credit_card),
+                    prefixIcon: Icon(Icons.credit_card),
                     hintText: 'Enter your national ID',
                   ),
                   validator: (value) {
@@ -1318,9 +1317,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                       return 'Please enter a valid ID number';
                     }
                     return null;
-                },
+                  },
                 ),
-                const SizedBox(height: 16),
+            const SizedBox(height: 16),
                 
                 TextFormField(
                   controller: _childrenAdmissionController,
@@ -1329,9 +1328,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     prefixIcon: Icon(Icons.family_restroom),
                     helperText: 'Enter admission numbers separated by commas',
                     hintText: 'ADM001, ADM002, ADM003',
-                  )
+                  ),
                   maxLines: 2,
-                  validator: (value) {
+                 validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter at least one admission number';
                     }
@@ -1343,7 +1342,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 TextFormField(
                   controller: _relationshipController,
                   decoration: const InputDecoration(
-                    labelText: 'Relationship to Children *',
+                    labelText: 'Relationship to Chi*',
                     prefixIcon: Icon(Icons.family_restroom),
                     hintText: 'e.g., Father, Mother, Guardian',
                   ),
@@ -1356,8 +1355,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 ),
                 const SizedBox(height: 16),
                 
-             TextFormField(
-                  controller: _addressController,
+                TextFormField(
+               controller: _addressController,
                   maxLines: 2,
                   decoration: const InputDecoration(
                     labelText: 'Residential Address *',
@@ -1367,8 +1366,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your address';
-                   }
-                    return null;
+                    }
+                    returnl;
                   },
                 ),
               ],
@@ -1388,9 +1387,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     _parentContactController.clear();
     _countyController.clear();
     _nationalIdController.clear();
-    _childrenAdmissionController.cler();
+    _childrenAdmissionController.clear();
     _relationshipController.clear();
-    _addressController.clear();
+    dressController.clear();
     _qualificationController.clear();
     _adminCodeController.clear();
     _selectedSubjects.clear();
@@ -1407,7 +1406,7 @@ class DashboardScreen extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final userName = authState.user?.name ?? 'User';
     
-    return Scaffol
+    return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1424,7 +1423,7 @@ class DashboardScreen extends ConsumerWidget {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications coming soon!')),
+                const SnackBar(content: Text('Notificatns coming soon!')),
               );
             },
           ),
@@ -1441,9 +1440,9 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             // Welcome Card
             Card(
-              elevation: 
+              elevation: 4,
               child: Container(
-                width: double.infinity,
+              h: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -1454,8 +1453,8 @@ class DashboardScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                ch Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
+                  crossAxisAlignment: CrssAxisAlignment.start,
                   children: [
                     Text(
                       'Welcome to ElimuConnect!',
@@ -1467,7 +1466,7 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Your gateway to quality education in Kenya',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white70,
                       ),
                     ),
@@ -1481,9 +1480,9 @@ class DashboardScreen extends ConsumerWidget {
               'Quick Access',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-             ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 1
             
             // Dashboard Grid
             Expanded(
@@ -1497,7 +1496,7 @@ class DashboardScreen extends ConsumerWidget {
                     subtitle: 'Browse books & resources',
                     icon: Icons.library_books,
                     color: Colors.blue,
-                    onTap: () => context.go('/library'),
+                    onTap: () => context.go('/ibrary'),
                   ),
                   _DashboardCard(
                     title: 'Assessments',
@@ -1509,8 +1508,8 @@ class DashboardScreen extends ConsumerWidget {
                   _DashboardCard(
                     title: 'Messages',
                     subtitle: 'Connect with teachers',
-                 icon: Icons.message,
-                    color: Colors.purple,
+                    icon: Icons.message,
+                    cColors.purple,
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -1521,9 +1520,9 @@ class DashboardScreen extends ConsumerWidget {
                     },
                   ),
                   _DashboardCard(
-                    title: 'Proress',
+                    title: 'Progress',
                     subtitle: 'Track your learning',
-                    icon: Icons.trending_up,
+                  icon: Icons.trending_up,
                     color: Colors.orange,
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1533,11 +1532,11 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                       );
                     },
-              ,
+                  ),
                 ],
               ),
             ),
-          ],
+      ],
         ),
       ),
     );
@@ -1565,7 +1564,7 @@ class _DashboardCard extends StatelessWidget {
       elevation: 3,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRus: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -1577,9 +1576,8 @@ class _DashboardCard extends StatelessWidget {
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-           hild: Icon(icon, size: 32, color: color),
-              ),
-              const SizedBox(height: 16),
+                child: Icon(icon, size: 32, color: color),
+              ),        const SizedBox(height: 16),
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -1591,9 +1589,9 @@ class _DashboardCard extends StatelessWidget {
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-           color: Colors.grey[600],
+                  color: Colors.grey[600],
                 ),
-                textAlign: TextAlign.center,
+             textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -1615,7 +1613,7 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        ions: [
+        actions: [
           PopupMenuButton(
             icon: const Icon(Icons.more_vert),
             itemBuilder: (context) => [
@@ -1644,10 +1642,10 @@ class ProfileScreen extends ConsumerWidget {
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Settings coming soon!')),
-              );
+                  );
                 },
               ),
-              const PopupMenuDivider(),
+       const PopupMenuDivider(),
               PopupMenuItem(
                 child: const Row(
                   children: [
@@ -1658,9 +1656,8 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 onTap: () async {
                   await ref.read(authProvider.notifier).logout();
-                 ontext.mounted) {
-                    context.go('/login');
-                  }
+                  if (context.mounted) {
+                    context.go('/logi                  }
                 },
               ),
             ],
@@ -1676,9 +1673,9 @@ class ProfileScreen extends ConsumerWidget {
                 // Profile Header
                 Card(
                   child: Padding(
-                    padding: const EdgeIts.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: Column(
-                      children: [
+                    children: [
                         CircleAvatar(
                           radius: 50,
                           backgroundColor: Theme.of(context).colorScheme.primary,
@@ -1686,9 +1683,9 @@ class ProfileScreen extends ConsumerWidget {
                             user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
                             style: const TextStyle(
                               fontSize: 32,
-                              fontWeight: FontWeight.ld,
+                              fontWeight: FontWeight.bold,
                               color: Colors.white,
-                            ),
+                       ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -1708,7 +1705,7 @@ class ProfileScreen extends ConsumerWidget {
                           child: Text(
                             user.role.toUpperCase(),
                             style: TextStyle(
-                           color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              color: Theme.of(context).colorScheme.onPrimaryner,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1722,8 +1719,9 @@ class ProfileScreen extends ConsumerWidget {
                 // Profile Information
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(16                 child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Profile Information',
@@ -1733,8 +1731,8 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         _ProfileInfoRow(
-                         icon: Icons.email,
-                          label: 'Email',
+                          icon: Icons.email,
+                        abel: 'Email',
                           value: user.email,
                         ),
                         _ProfileInfoRow(
@@ -1745,9 +1743,9 @@ class ProfileScreen extends ConsumerWidget {
                         _ProfileInfoRow(
                           icon: Icons.calendar_today,
                           label: 'Member since',
-                     value: 'Recently joined',
+                          value: 'Recently joined',
                         ),
-                      ],
+                  ],
                     ),
                   ),
                 ),
@@ -1760,8 +1758,9 @@ class ProfileScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text                       'Quick Actions',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        Text(
+                          'Quick Actions',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1769,9 +1768,9 @@ class ProfileScreen extends ConsumerWidget {
                         ListTile(
                           leading: const Icon(Icons.help_outline),
                           title: const Text('Help & Support'),
-                          trailing: const Icon(Icons.arrow_rd_ios, size: 16),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                     ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Help section coming soon!')),
                             );
                           },
@@ -1779,16 +1778,16 @@ class ProfileScreen extends ConsumerWidget {
                         ListTile(
                           leading: const Icon(Icons.info_outline),
                           title: const Text('About ElimuConnect'),
-                          trailing: co Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: () {
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
                             showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
                                 title: const Text('About ElimuConnect'),
                                 content: const Text(
                                   'ElimuConnect is Kenya\'s premier educational platform, '
-                                  'connecting students, teachand parents with quality '
-                                  'digital learning resources.\n\n'
+                                  'connecting students, teachers and parents with quality '
+                                  ital learning resources.\n\n'
                                   'Version 1.0.0\n'
                                   'Elimu kwa Wote - Education for All',
                                 ),
@@ -1796,7 +1795,7 @@ class ProfileScreen extends ConsumerWidget {
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
                                     child: const Text('Close'),
-                                 ),
+                                  ),
                                 ],
                               ),
                             );
@@ -1821,11 +1820,11 @@ class _ProfileInfoRow extends StatelessWidget {
   const _ProfileInfoRow({
     required this.icon,
     required this.label,
-    requirethis.value,
+    required this.value,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext con) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -1840,9 +1839,10 @@ class _ProfileInfoRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(            child: Text(
+          Expanded(
+            child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              stylenst TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -1863,8 +1863,8 @@ class LibraryScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-           ressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnac
                 const SnackBar(content: Text('Search feature coming soon!')),
               );
             },
@@ -1899,7 +1899,8 @@ class AssessmentScreen extends StatelessWidget {
   const AssessmentScreen({super.key});
 
   @override
-  Widget build(BuildContext context) return Scaffold(
+  Widget build(BuildContext context) {
+    return Scaffold(
       appBar: AppBar(
         title: const Text('Assessments'),
       ),
@@ -1915,8 +1916,8 @@ class AssessmentScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-           'Interactive quizzes and assessments\ncoming soon!',
-              textAlign: TextAlign.center,
+              'Interactive quizzes and assessments\ncoming soon!',
+            textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey),
             ),
           ],
@@ -1924,4 +1925,4 @@ class AssessmentScreen extends StatelessWidget {
       ),
     );
   }
-}
+} '
