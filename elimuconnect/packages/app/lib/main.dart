@@ -717,11 +717,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Email field
                   TextFormField(
                     controller: _emailController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Barua pepe / Email',
-                      prefixIcon: const Icon(Icons.email),
+                      prefixIcon: Icon(Icons.email),
                       filled: true,
-                      fillColor: Colors.grey[50],
+                      fillColor: Colors.white,
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -748,7 +748,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                       filled: true,
-                      fillColor: Colors.grey[50],
+                      fillColor: Colors.white,
                     ),
                     validator: (value) {
                       if (value?.isEmpty ?? true) {
@@ -765,14 +765,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (_selectedRole == UserRole.admin) ...[
                     const SizedBox(height: 16),
                     TextFormField(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Admin Code',
-                        prefixIcon: const Icon(Icons.admin_panel_settings),
+                        prefixIcon: Icon(Icons.admin_panel_settings),
                         filled: true,
-                        fillColor: Colors.orange[50],
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(color: ElimuTheme.warningColor),
-                        ),
+                        fillColor: Colors.white,
                       ),
                       validator: (value) {
                         if (_selectedRole == UserRole.admin && value != 'OnlyMe@2025') {
@@ -785,7 +782,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   
                   const SizedBox(height: 24),
                   
-                  //n button
+                  // Login button
                   ElevatedButton.icon(
                     onPressed: authState.isLoading ? null : () => _handleLogin(ref),
                     icon: authState.isLoading 
@@ -797,7 +794,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                  : const Icon(Icons.login),
+                      : const Icon(Icons.login),
                     label: Text(authState.isLoading ? 'Kuingia...' : 'Ingia / Login'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -808,16 +805,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Register link
                   OutlinedButton.icon(
                     onPressed: () => context.go('/auth/register'),
-                 icon: const Icon(Icons.person_add),
+                    icon: const Icon(Icons.person_add),
                     label: const Text('Huna akaunti? Jisajili / Register'),
                   ),
                   const SizedBox(height: 8),
                   
-                  // Forgot password link
-                  TextButton.icon(
+                orgot password link
+                  TextButton(
                     onPressed: () => context.go('/auth/forgot-password'),
-                    icon: const Icon(Icons.help_outline),
-                    label: const Text('Umesahau nywila? / Forgot Password?'),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.help_outline),
+                        SizedBox(width: 8),
+                        Text('Umesahau nywila? / Forgot Password?'),
+                      ],
+                    ),
                   ),
                  
                   // Error message
@@ -830,7 +833,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.red[200]!),
                       ),
-                     child: Row(
+                      child: Row(
                         children: [
                           Icon(Icons.error_outline, color: Colors.red[700]),
                           const SizedBox(width: 8),
@@ -842,8 +845,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-                ),
-                ],
+                                   ],
               ),
             ),
           );
@@ -866,7 +868,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin(WidgetRef ref) {
-    if (_formKey.currentState?.vaidate() ?? false) {
+    if (_formKey.currentState?.validate() ?? f {
       ref.read(authStateProvider.notifier).login(
         _emailController.text,
         _passwordController.text,
@@ -890,7 +892,7 @@ class RegisterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ji/ Register'),
+        title: const Text('Jisajili / Register,
         backgroundColor: ElimuTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -926,7 +928,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  Widget buiBuildContext context) {
+  Widget build(BuildCont context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sahau Nywila / Forgot Password'),
@@ -942,7 +944,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               Icons.lock_reset,
               size: 64,
               color: ElimuTheme.warningColor,
-           ),
+            ),
             SizedBox(height: 24),
             Text(
               'Password Recovery',
@@ -961,7 +963,8 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 }
 
-class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
+class DashboardScreen extends ConsumerWidget {
+  c DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -977,7 +980,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
+              Scessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Notifications feature coming soon')),
               );
             },
@@ -990,8 +993,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                 onTap: () => context.go('/dashboard/profile'),
               ),
               PopupMenuItem(
-                child: const Text('Ses'),
-                onTap: () {
+                child: const Text('Settings'),
+           onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Settings coming soon')),
                   );
@@ -1006,8 +1009,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.a,
-        child: Column(
+        padding: const EdgeInsets.all(16),
+     ld: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Welcome card with Kenya theme
@@ -1020,7 +1023,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                   end: Alignment.bottomRight,
                   colors: [
                     ElimuTheme.primaryColor,
-                   ElimuTheme.secondaryColor,
+                    EimuTheme.secondaryColor,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -1034,8 +1037,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                chldren: [
-                  Row(
+                children: [
+                 Row(
                     children: [
                       CircleAvatar(
                         radius: 30,
@@ -1047,8 +1050,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                         ),
                       ),
                       const SizedBox(width: 16),
-                  Expanded(
-                        child: Column(
+                      Expanded                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -1058,7 +1060,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
-                          ),
+                        ),
                             Text(
                               _getRoleDisplayName(user?.role ?? UserRole.student),
                               style: const TextStyle(
@@ -1071,7 +1073,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                       ),
                     ],
                   ),
-                  const Sizox(height: 16),
+                  const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -1082,7 +1084,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                       children: [
                         Icon(Icons.school, color: Colors.white, size: 20),
                         SizedBox(width: 8),
-                        Text(                       'ElimuConnect - Elimu kwa Wote',
+                        Text(
+                    'ElimuConnect - Elimu kwa Wote',
                           style: TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
@@ -1099,7 +1102,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                 Expanded(
                   child: _StatCard(
                     title: 'Vitabu',
-                subtitle: 'Books',
+                    sule: 'Books',
                     value: '150+',
                     icon: Icons.book,
                     color: ElimuTheme.successColor,
@@ -1113,8 +1116,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                     value: '25',
                     icon: Icons.quiz,
                     color: ElimuTheme.warningColor,
-             ),
-                ),
+                  ),
+            ),
               ],
             ),
             const SizedBox(height: 16),
@@ -1130,8 +1133,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                   ),
                 ),
                 const SizedBox(width: 16),
-                Expand
-                  child: _StatCard(
+                Expanded(
+               child: _StatCard(
                     title: 'Maendeleo',
                     subtitle: 'Progress',
                     value: '75%',
@@ -1146,7 +1149,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
             // Quick actions
             Text(
               'Vitendo vya Haraka / Quick Actions',
-              style: Theme.of(context).xtTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.titLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1161,7 +1164,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
               children: [
                 _QuickActionCard(
                   title: 'Maktaba',
-                  subtitle: 'Library',
+                  sutitle: 'Library',
                   icon: Icons.library_books,
                   onTap: () => context.go('/dashboard/library'),
                 ),
@@ -1174,7 +1177,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
                 _QuickActionCard(
                   title: 'Ujumbe',
                   subtitle: 'Messages',
-           icon: Icons.message,
+                  icons.message,
                   onTap: () => context.go('/dashboard/messages'),
                 ),
                 _QuickActionCard(
@@ -1192,8 +1195,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
     );
   }
 
-  IconData _getRoleIcon(UserRole) {
-    switch (role) {
+  IconData _getRoleIcon(UserRole role) {
+  itch (role) {
       case UserRole.student:
         return Icons.school;
       case UserRole.teacher:
@@ -1211,7 +1214,8 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
         return 'Mwanafunzi / Student';
       case UserRole.teacher:
         return 'Mwalimu / Teacher';
-      case UserRole.pare        return 'Mzazi / Parent';
+      case UserRole.parent:
+         'Mzazi / Parent';
       case UserRole.admin:
         return 'Msimamizi / Admin';
     }
@@ -1228,7 +1232,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
           label: 'Nyumbani',
         ),
         BottomNavigationBarItem(
-          icon: Iconons.library_books),
+          icon: Icon(Icons.libraryooks),
           label: 'Maktaba',
         ),
         BottomNavigationBarItem(
@@ -1249,7 +1253,7 @@ class DashboardScreen extends ConsumerWidget const DashboardScreen({super.key});
             context.go('/dashboard/library');
             break;
           case 2:
-          context.go('/dashboard/assessments');
+            context('/dashboard/assessments');
             break;
           case 3:
             context.go('/dashboard/messages');
@@ -1276,7 +1280,7 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
-  Widget buid(BuildContext context) {
+  Widget build(BuildContexext) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1292,7 +1296,7 @@ class _StatCard extends StatelessWidget {
               Icon(icon, color: color, size: 24),
               const Spacer(),
               Text(
-          value,
+                vale,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -1312,8 +1316,7 @@ class _StatCard extends StatelessWidget {
           Text(
             subtitle,
             style: TextStyle(
-             fontSize: 12,
-              color: Colors.grey[600],
+              fontSize: 1          color: Colors.grey[600],
             ),
           ),
         ],
@@ -1340,7 +1343,7 @@ class _QuickActionCard extends StatelessWidget {
     return Card(
       elevation: 2,
       child: InkWell(
-       onTap: onTap,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -1356,8 +1359,7 @@ class _QuickActionCard extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16                 fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1378,8 +1380,8 @@ class _QuickActionCard extends StatelessWidget {
 }
 
 // Other screen implementations
-class ProfileScreen extends Consumeidget {
-  const ProfileScreen({super.key});
+class ProfileScreen extends ConsumerWidget {
+  const PrfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1396,9 +1398,9 @@ class ProfileScreen extends Consumeidget {
         child: Column(
           children: [
             CircleAvatar(
-              radiu,
+              radius: 50,
               backgroundColor: ElimuTheme.primaryColor,
-              child: Icon(
+              child: const Icon(
                 Icons.person,
                 size: 60,
                 color: Colors.white,
@@ -1411,7 +1413,7 @@ class ProfileScreen extends Consumeidget {
             ),
             Text(
               user?.email ?? 'user@example.com',
-              style: Theme.of(context).textTheme.bodyLar.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyith(
                 color: Colors.grey[600],
               ),
             ),
@@ -1434,7 +1436,7 @@ class LibraryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        titlnst Text('Maktaba / Library'),
+        title: cont('Maktaba / Library'),
         backgroundColor: ElimuTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -1450,8 +1452,8 @@ class LibraryScreen extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              'Digital Libr
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              'Digital Library',
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
@@ -1472,7 +1474,7 @@ class AssessmentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        tionst Text('Jaribio / Assessments'),
+        title: conxt('Jaribio / Assessments'),
         backgroundColor: ElimuTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -1488,7 +1490,8 @@ class AssessmentScreen extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              'Assessment Syste            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              'Assessment System',
+       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
@@ -1509,7 +1512,7 @@ class MessagesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title const Text('Ujumbe / Messages'),
+        title: const Text('Ujumbe / Messages'),
         backgroundColor: ElimuTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -1525,8 +1528,7 @@ class MessagesScreen extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              'Communication Prm',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              'Communication Platform           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
