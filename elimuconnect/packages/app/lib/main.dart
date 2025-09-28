@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// App imports
+// App imports - using your existing structure
 import 'src/app.dart';
 
 /// Main entry point of the ElimConnect application
@@ -22,10 +22,10 @@ Future<void> main() async {
     // Initialize app settings
     await _initializeApp();
     
-    // Run the app
+    // Run the app using your existing App widget
     runApp(
       ProviderScope(
-        child: const ElimConnectApp(),
+        child: const App(), // Using your existing App widget from src/app.dart
       ),
     );
   } catch (error, stackTrace) {
@@ -115,15 +115,32 @@ Future<void> _initializeApp() async {
   }
 }
 
-/// Main application widget
-class ElimConnectApp extends ConsumerStatefulWidget {
-  const ElimConnectApp({super.key});
+/// Environment-specific app configuration
+class AppEnvironment {
+  static const String environment = String.fromEnvironment(
+    'ENVIRONMENT',
+    defaultValue: 'development',
+  );
+  
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.elimuconnect.co.ke',
+  );
 
-  @override
-  ConsumerState<ElimConnectApp> createState() => _ElimConnectAppState();
+  static bool get isDevelopment => environment == 'development';
+  static bool get isProduction => environment == 'production';
+  static bool get isStaging => environment == 'staging';
 }
 
-class _ElimConnectAppState extends ConsumerState<ElimConnectApp>
+/// Fallback App widget in case src/app.dart has issues
+class FallbackElimConnectApp extends ConsumerStatefulWidget {
+  const FallbackElimConnectApp({super.key});
+
+  @override
+  ConsumerState<FallbackElimConnectApp> createState() => _FallbackElimConnectAppState();
+}
+
+class _FallbackElimConnectAppState extends ConsumerState<FallbackElimConnectApp>
     with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -173,8 +190,14 @@ class _ElimConnectAppState extends ConsumerState<ElimConnectApp>
       // Navigation configuration
       navigatorKey: _navigatorKey,
       
-      // Initial route
-      home: const ElimConnectMainApp(),
+      // Initial route - this should route to your splash screen
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const FallbackSplashScreen(),
+        '/login': (context) => const FallbackLoginScreen(),
+        '/register': (context) => const FallbackRegisterScreen(),
+        '/dashboard': (context) => const FallbackDashboardScreen(),
+      },
       
       // Error handling
       builder: (context, child) {
@@ -215,10 +238,8 @@ class _ElimConnectAppState extends ConsumerState<ElimConnectApp>
                     ElevatedButton(
                       onPressed: () {
                         // Navigate back to home
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const ElimConnectMainApp(),
-                          ),
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/',
                           (route) => false,
                         );
                       },
@@ -364,287 +385,223 @@ class _CustomScrollBehavior extends ScrollBehavior {
   }
 }
 
-/// Main application content
-class ElimConnectMainApp extends StatelessWidget {
-  const ElimConnectMainApp({super.key});
+/// Fallback screens - these should be replaced by your actual implementations
+
+class FallbackSplashScreen extends StatelessWidget {
+  const FallbackSplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // This should route to your actual splash screen from src/features/splash/presentation/pages/splash_page.dart
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
+      backgroundColor: const Color(0xFF2E7D32),
+      body: Center(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.school,
-                color: Theme.of(context).colorScheme.onPrimary,
-                size: 24,
+                size: 80,
+                color: Color(0xFF2E7D32),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(height: 24),
             const Text(
               'ElimConnect',
               style: TextStyle(
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
-                fontSize: 24,
+                color: Colors.white,
               ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Connecting Education in Kenya',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 48),
+            const CircularProgressIndicator(
+              color: Colors.white,
             ),
           ],
         ),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Hero section
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.school,
-                      size: 80,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Welcome to ElimConnect',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Connecting Education in Kenya',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Features grid
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.2,
-                children: [
-                  _buildFeatureCard(
-                    context,
-                    icon: Icons.person_outline,
-                    title: 'Students',
-                    subtitle: 'Learn & Grow',
-                    color: Colors.blue,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    icon: Icons.school_outlined,
-                    title: 'Teachers',
-                    subtitle: 'Teach & Inspire',
-                    color: Colors.green,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    icon: Icons.family_restroom,
-                    title: 'Parents',
-                    subtitle: 'Track Progress',
-                    color: Colors.orange,
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    icon: Icons.admin_panel_settings,
-                    title: 'Admins',
-                    subtitle: 'Manage System',
-                    color: Colors.purple,
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Action buttons
-              Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _showComingSoonDialog(context, 'Login');
-                      },
-                      icon: const Icon(Icons.login),
-                      label: const Text('Login'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        _showComingSoonDialog(context, 'Registration');
-                      },
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Register'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Footer
-              Text(
-                'Empowering Education Across Kenya',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
-    return Card(
-      child: InkWell(
-        onTap: () {
-          _showComingSoonDialog(context, title);
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: color,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showComingSoonDialog(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                Icons.construction,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              const Text('Coming Soon'),
-            ],
-          ),
-          content: Text(
-            '$feature functionality is currently under development. '
-            'Please check back soon for updates!',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
 
-/// Environment-specific app configuration
-class AppEnvironment {
-  static const String environment = String.fromEnvironment(
-    'ENVIRONMENT',
-    defaultValue: 'development',
-  );
-  
-  static const String apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.elimuconnect.co.ke',
-  );
+class FallbackLoginScreen extends StatelessWidget {
+  const FallbackLoginScreen({super.key});
 
-  static bool get isDevelopment => environment == 'development';
-  static bool get isProduction => environment == 'production';
-  static bool get isStaging => environment == 'staging';
+  @override
+  Widget build(BuildContext context) {
+    // This should be replaced by your actual login page from src/features/auth/presentation/pages/login_page.dart
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login'),
+        backgroundColor: const Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Login functionality is implemented in:',
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'src/features/auth/presentation/pages/login_page.dart',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'monospace',
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Please check your src/app.dart and routing configuration.',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FallbackRegisterScreen extends StatelessWidget {
+  const FallbackRegisterScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // This should be replaced by your actual registration page from src/features/auth/presentation/pages/registration_page.dart
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Register'),
+        backgroundColor: const Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Registration functionality is implemented in:',
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'src/features/auth/presentation/pages/registration_page.dart',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'monospace',
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Please check your src/app.dart and routing configuration.',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FallbackDashboardScreen extends StatelessWidget {
+  const FallbackDashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // This should be replaced by your actual dashboards
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        backgroundColor: const Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Dashboard functionality is implemented in:',
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              Text(
+                '• src/features/dashboard/admin_dashboard/presentation/pages/admin_dashboard_page.dart',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  color: Colors.grey,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                '• src/features/dashboard/teacher_dashboard/presentation/pages/teacher_dashboard_page.dart',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  color: Colors.grey,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                '• src/features/dashboard/student_dashboard/presentation/pages/student_dashboard_page.dart',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  color: Colors.grey,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                '• src/features/dashboard/parent_dashboard/presentation/pages/parent_dashboard_page.dart',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  color: Colors.grey,
+                ),
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Please check your src/app.dart and routing configuration.',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
