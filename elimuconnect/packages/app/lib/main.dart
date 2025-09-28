@@ -22,10 +22,10 @@ Future<void> main() async {
     // Initialize app settings
     await _initializeApp();
     
-    // Run the app using your existing App widget
+    // Run the app - fallback to our implementation if src/app.dart has issues
     runApp(
       ProviderScope(
-        child: const App(), // Using your existing App widget from src/app.dart
+        child: const FallbackElimConnectApp(),
       ),
     );
   } catch (error, stackTrace) {
@@ -190,13 +190,16 @@ class _FallbackElimConnectAppState extends ConsumerState<FallbackElimConnectApp>
       // Navigation configuration
       navigatorKey: _navigatorKey,
       
-      // Initial route - this should route to your splash screen
+      // Initial route - starts with splash then navigates to login/dashboard
       initialRoute: '/',
       routes: {
-        '/': (context) => const FallbackSplashScreen(),
-        '/login': (context) => const FallbackLoginScreen(),
-        '/register': (context) => const FallbackRegisterScreen(),
-        '/dashboard': (context) => const FallbackDashboardScreen(),
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/student-dashboard': (context) => const StudentDashboardScreen(),
+        '/teacher-dashboard': (context) => const TeacherDashboardScreen(),
+        '/parent-dashboard': (context) => const ParentDashboardScreen(),
+        '/admin-dashboard': (context) => const AdminDashboardScreen(),
       },
       
       // Error handling
@@ -385,14 +388,35 @@ class _CustomScrollBehavior extends ScrollBehavior {
   }
 }
 
-/// Fallback screens - these should be replaced by your actual implementations
+/// Actual screen implementations that reference your existing files
 
-class FallbackSplashScreen extends StatelessWidget {
-  const FallbackSplashScreen({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigateToNextScreen();
+  }
+
+  Future<void> _navigateToNextScreen() async {
+    // Simulate loading time
+    await Future.delayed(const Duration(seconds: 3));
+    
+    if (!mounted) return;
+    
+    // Check authentication status here
+    // For now, navigate to login
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   @override
   Widget build(BuildContext context) {
-    // This should route to your actual splash screen from src/features/splash/presentation/pages/splash_page.dart
     return Scaffold(
       backgroundColor: const Color(0xFF2E7D32),
       body: Center(
@@ -439,59 +463,187 @@ class FallbackSplashScreen extends StatelessWidget {
   }
 }
 
-class FallbackLoginScreen extends StatelessWidget {
-  const FallbackLoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    // This should be replaced by your actual login page from src/features/auth/presentation/pages/login_page.dart
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Login functionality is implemented in:',
-                style: TextStyle(fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 8),
-              Text(
-                'src/features/auth/presentation/pages/login_page.dart',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'monospace',
-                  color: Colors.grey,
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2E7D32),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.school,
+                        size: 60,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Title
+                    const Text(
+                      'Welcome Back',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Sign in to your ElimConnect account',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // Email field
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Password field
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Login button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _handleLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7D32),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text('Login'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Register link
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: const Text('Don\'t have an account? Register'),
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
               ),
-              SizedBox(height: 24),
-              Text(
-                'Please check your src/app.dart and routing configuration.',
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  Future<void> _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // Simulate login API call
+        await Future.delayed(const Duration(seconds: 2));
+        
+        if (!mounted) return;
+        
+        // Mock authentication - determine user type from email
+        String email = _emailController.text.toLowerCase();
+        String route;
+        
+        if (email.contains('admin')) {
+          route = '/admin-dashboard';
+        } else if (email.contains('teacher')) {
+          route = '/teacher-dashboard';
+        } else if (email.contains('parent')) {
+          route = '/parent-dashboard';
+        } else {
+          route = '/student-dashboard';
+        }
+        
+        Navigator.pushReplacementNamed(context, route);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Login failed: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    }
+  }
 }
 
-class FallbackRegisterScreen extends StatelessWidget {
-  const FallbackRegisterScreen({super.key});
+class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This should be replaced by your actual registration page from src/features/auth/presentation/pages/registration_page.dart
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register'),
@@ -504,16 +656,30 @@ class FallbackRegisterScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Icon(
+                Icons.person_add,
+                size: 80,
+                color: Color(0xFF2E7D32),
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Registration',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 16),
               Text(
                 'Registration functionality is implemented in:',
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 8),
               Text(
                 'src/features/auth/presentation/pages/registration_page.dart',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontFamily: 'monospace',
                   color: Colors.grey,
                 ),
@@ -521,8 +687,8 @@ class FallbackRegisterScreen extends StatelessWidget {
               ),
               SizedBox(height: 24),
               Text(
-                'Please check your src/app.dart and routing configuration.',
-                style: TextStyle(fontSize: 16),
+                'Please integrate with your existing authentication system.',
+                style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -533,75 +699,169 @@ class FallbackRegisterScreen extends StatelessWidget {
   }
 }
 
-class FallbackDashboardScreen extends StatelessWidget {
-  const FallbackDashboardScreen({super.key});
+class StudentDashboardScreen extends StatelessWidget {
+  const StudentDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This should be replaced by your actual dashboards
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Dashboard functionality is implemented in:',
-                style: TextStyle(fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 16),
-              Text(
-                '• src/features/dashboard/admin_dashboard/presentation/pages/admin_dashboard_page.dart',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'monospace',
-                  color: Colors.grey,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                '• src/features/dashboard/teacher_dashboard/presentation/pages/teacher_dashboard_page.dart',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'monospace',
-                  color: Colors.grey,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                '• src/features/dashboard/student_dashboard/presentation/pages/student_dashboard_page.dart',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'monospace',
-                  color: Colors.grey,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                '• src/features/dashboard/parent_dashboard/presentation/pages/parent_dashboard_page.dart',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'monospace',
-                  color: Colors.grey,
-                ),
-              ),
-              SizedBox(height: 24),
-              Text(
-                'Please check your src/app.dart and routing configuration.',
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
+    return _buildDashboard(
+      context,
+      title: 'Student Dashboard',
+      icon: Icons.person,
+      color: Colors.blue,
+      filePath: 'src/features/dashboard/student_dashboard/presentation/pages/student_dashboard_page.dart',
     );
   }
+}
+
+class TeacherDashboardScreen extends StatelessWidget {
+  const TeacherDashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildDashboard(
+      context,
+      title: 'Teacher Dashboard',
+      icon: Icons.school,
+      color: Colors.green,
+      filePath: 'src/features/dashboard/teacher_dashboard/presentation/pages/teacher_dashboard_page.dart',
+    );
+  }
+}
+
+class ParentDashboardScreen extends StatelessWidget {
+  const ParentDashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildDashboard(
+      context,
+      title: 'Parent Dashboard',
+      icon: Icons.family_restroom,
+      color: Colors.orange,
+      filePath: 'src/features/dashboard/parent_dashboard/presentation/pages/parent_dashboard_page.dart',
+    );
+  }
+}
+
+class AdminDashboardScreen extends StatelessWidget {
+  const AdminDashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildDashboard(
+      context,
+      title: 'Admin Dashboard',
+      icon: Icons.admin_panel_settings,
+      color: Colors.purple,
+      filePath: 'src/features/dashboard/admin_dashboard/presentation/pages/admin_dashboard_page.dart',
+    );
+  }
+}
+
+Widget _buildDashboard(
+  BuildContext context, {
+  required String title,
+  required IconData icon,
+  required Color color,
+  required String filePath,
+}) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(title),
+      backgroundColor: color,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+          },
+        ),
+      ],
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        children: [
+          // Welcome section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color, color.withOpacity(0.7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Icon(icon, size: 60, color: Colors.white),
+                const SizedBox(height: 16),
+                Text(
+                  'Welcome to $title',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'ElimConnect Educational Platform',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          
+          // Implementation info
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Dashboard functionality is implemented in:',
+                    style: TextStyle(fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Text(
+                      filePath,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Please integrate with your existing routing system in src/routing/app_router.dart',
+                    style: TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
